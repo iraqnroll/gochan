@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/iraqnroll/gochan/views"
@@ -17,5 +18,36 @@ func (static Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func StaticHandler(tpl views.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, nil)
+	}
+}
+
+func FAQ(tpl views.Template) http.HandlerFunc {
+	rules := []struct {
+		Rule     template.HTML
+		RuleInfo template.HTML
+	}{
+		{
+			Rule:     "Nelaužykite Lietuvos ar Vokietijos įstatymų.",
+			RuleInfo: "(Serveris yra Vokietijoje)",
+		},
+		{
+			Rule:     "Neužtvindykite, nespaminkite, neskelbkite nereikalingų įrašų.",
+			RuleInfo: "",
+		},
+		{
+			Rule:     "Reklama yra draudžiama.",
+			RuleInfo: "",
+		},
+		{
+			Rule:     "Kalbėkite tik lietuviškai visose lentose, išskyrus /int/.",
+			RuleInfo: "",
+		},
+		{
+			Rule:     "Laikykitės kiekvienos lentos temos.",
+			RuleInfo: "(pvz.: nedėkite to, kas nesusiję su anime /a/ lentoje)",
+		},
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		tpl.Execute(w, rules)
 	}
 }

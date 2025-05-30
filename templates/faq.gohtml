@@ -1,1 +1,12 @@
-<h1>Test FAQ page</h1>
+{{template "header" .}}
+<h1>FAQ :</h1>
+<ol>
+    {{range .}}
+        {{template "rules" .}}
+    {{end}}
+</ol>
+{{template "footer" .}}
+
+{{define "rules"}}
+<li><b>{{.Rule}}</b>{{.RuleInfo}}</li>
+{{end}}
