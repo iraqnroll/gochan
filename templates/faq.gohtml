@@ -1,12 +1,17 @@
 {{template "header" .}}
-<h1>FAQ :</h1>
-<ol>
-    {{range .}}
-        {{template "rules" .}}
-    {{end}}
-</ol>
+<div class="px-6">
+    <h1 class="py-4 text-4x1 semibold tracking-tight">FAQ :</h1>
+    <ol class="grid grid-cols-1 gap-16">
+        {{range .}}
+            {{template "rules" .}}
+        {{end}}
+    </ol>
+</div>
 {{template "footer" .}}
 
 {{define "rules"}}
-<li><b>{{.Rule}}</b>{{.RuleInfo}}</li>
+<li class="my-4 border-t border-gray-400 py-1 px-2">
+    <span class="block text-lg text-gray-800 semibold">{{.Rule}}</span>
+    <span class="block text-sm text-gray-500 semibold">{{.RuleInfo}}</span>
+</li>
 {{end}}

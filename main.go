@@ -26,6 +26,12 @@ func main() {
 	r.Get("/faq", controllers.FAQ(
 		views.Must(views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))))
 
+	var usersC controllers.Users
+	usersC.Templates.Login = views.Must(views.ParseFS(templates.FS, "login.gohtml", "tailwind.gohtml"))
+
+	r.Get("/login", usersC.LoginForm)
+	r.Post("/login", usersC.Login)
+
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)
 	})
@@ -34,4 +40,4 @@ func main() {
 	http.ListenAndServe(":3000", r)
 }
 
-//7.7
+//7.8

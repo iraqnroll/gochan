@@ -7,11 +7,34 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <!-- ... -->
 </head>
-<body>
+<body class="min-h-screen bg-blue-100">
+  <header class="bg-gradient-to-r from-blue-500 to-blue-200 text-white">
+    <nav class="px-8 py-6 flex items-center space-x-12">
+      <div class="text-4x1">Gochan</div>
+      <div class="flex-grow">
+        <a class="hover:text-gray-400 pr-8" href="/">[home]</a>
+        <a class="hover:text-gray-400 pr-8" href="/contact">[contact]</a>
+        <a class="hover:text-gray-400 pr-8" href="/faq">[faq]</a>
+      </div>
+      <div>
+        <a class="hover:text-gray-400 pr-8" href="/login">[login]</a>
+      </div>
+    </nav>
+  </header>
 {{end}}
 
 {{define "footer"}}
 <!-- ... -->
+<footer class="absolute inset-x-0 bottom-0">
+  <div class="flex-col text-center">
+    <div>                                 
+      gochan
+    </div>
+    <div>
+      2025 - ?
+    </div>
+  </div>
+</footer>
 </body>
 </html>
 {{end}}

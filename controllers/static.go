@@ -3,25 +3,23 @@ package controllers
 import (
 	"html/template"
 	"net/http"
-
-	"github.com/iraqnroll/gochan/views"
 )
 
 type Static struct {
-	Template views.Template
+	Template Template
 }
 
 func (static Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	static.Template.Execute(w, nil)
 }
 
-func StaticHandler(tpl views.Template) http.HandlerFunc {
+func StaticHandler(tpl Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, nil)
 	}
 }
 
-func FAQ(tpl views.Template) http.HandlerFunc {
+func FAQ(tpl Template) http.HandlerFunc {
 	rules := []struct {
 		Rule     template.HTML
 		RuleInfo template.HTML

@@ -1,0 +1,38 @@
+{{template "header" .}}
+<div class="py-12 flex justify-center">
+    <div class="px-8 py-8 bg-white rounded shadow">
+    <h1 class="pt-4 pb-8 text-center text-3xl font-bold text-gray-900">
+        [login]
+    </h1>
+        <form action="/login" method="post">
+            <div>
+                <label for="username">[username]</label>
+                <input
+                    name="username"
+                    id="username"
+                    type="text"
+                    placeholder="bybmantas"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 rounded"
+                />
+            </div>
+            <div class="py-2">
+                <label for="password">[password]</label>
+                <input
+                    name="password"
+                    id="password"
+                    type="password"
+                    placeholder="Password..."
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-800 rounded"
+                />
+            </div>
+            <div class="py-4">
+                <button class="w-full py-4 px-2 bg-gray-600 hover:bg-gray-700 text-white rounded font-bold text-md" type="submit">
+                    [login]
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{{template "footer" .}}
