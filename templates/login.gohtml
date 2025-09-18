@@ -5,6 +5,9 @@
         [login]
     </h1>
         <form action="/login" method="post">
+            <div class="hidden">
+                {{csrfField}}
+            </div>
             <div>
                 <label for="username">[username]</label>
                 <input

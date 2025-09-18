@@ -10,7 +10,7 @@ import (
 
 type User struct {
 	id            int
-	username      string
+	Username      string
 	password_hash string
 	email         string
 	date_created  string
@@ -50,5 +50,29 @@ func (us *UserService) Create(username, password, email string, user_type int) (
 	}
 
 	//Return user obj. with a newly created DB record id.
+	return &user, nil
+}
+
+func (us *UserService) Authenticate(username, password string) (*User, error) {
+	//Postgres is case-sensitive, so convert sensitive strings to lowercase.
+	username = strings.ToLower(username)
+
+	user := User{
+		Username: username,
+	}
+
+	row := us.DB.QueryRow(`
+	SELECT id, password_hash FROM users WHERE username=$1`, username)
+
+	err := row.Scan(&user.id, &user.password_hash)
+	if err != nil {
+		return nil, fmt.Errorf("UserService.Authenticate failed : %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.password_hash), []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("UserService.Authenticate failed : %w", err)
+	}
+
 	return &user, nil
 }

@@ -5,6 +5,9 @@
         [create user]
     </h1>
         <form action="/create" method="post">
+            <div class="hidden">
+                {{csrfField}}
+            </div>
             <div>
                 <label for="username">[username]</label>
                 <input
@@ -48,7 +51,7 @@
             </div>
             <div class="py-4">
                 <button class="w-full py-4 px-2 bg-gray-600 hover:bg-gray-700 text-white rounded font-bold text-md" type="submit">
-                    [login]
+                    [create]
                 </button>
             </div>
         </form>

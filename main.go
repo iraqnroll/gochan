@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 
 	"github.com/iraqnroll/gochan/controllers"
 	"github.com/iraqnroll/gochan/models"
@@ -37,6 +38,14 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	csrfMw := csrf.Protect(
+		[]byte("gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"),
+		csrf.Secure(false),
+		csrf.TrustedOrigins([]string{"localhost:3000"}),
+	)
+
+	r.Use(csrfMw)
+
 	// TODO: Make the usage of embedded templates optional.
 
 	r.Get("/", controllers.StaticHandler(
@@ -57,11 +66,14 @@ func main() {
 	r.Get("/create", usersC.CreateForm)
 	r.Post("/create", usersC.Create)
 
+	r.Get("/admin/me", usersC.CurrentUser)
+
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)
 	})
 
 	fmt.Println("Starting the server on :3000...")
+
 	http.ListenAndServe(":3000", r)
 }
 
