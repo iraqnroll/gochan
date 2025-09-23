@@ -31,8 +31,13 @@ func main() {
 		DB: db,
 	}
 
+	sessionService := models.SessionService{
+		DB: db,
+	}
+
 	usersC := controllers.Users{
-		UserService: &userService,
+		UserService:    &userService,
+		SessionService: &sessionService,
 	}
 
 	r := chi.NewRouter()
@@ -62,6 +67,8 @@ func main() {
 
 	r.Get("/login", usersC.LoginForm)
 	r.Post("/login", usersC.Login)
+
+	r.Post("/logout", usersC.Logout)
 
 	r.Get("/create", usersC.CreateForm)
 	r.Post("/create", usersC.Create)

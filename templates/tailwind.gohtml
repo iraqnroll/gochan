@@ -19,6 +19,14 @@
       <div>
         <a class="hover:text-gray-400 pr-8" href="/login">[login]</a>
       </div>
+      <div class="space-x-4">
+        <form action="/logout" method="post" class="inline pr-4">
+          <div class="hidden">
+            {{csrfField}}
+          </div>
+          <button type="submit">[logout]</button>
+        </form>
+      </div>
     </nav>
   </header>
 {{end}}

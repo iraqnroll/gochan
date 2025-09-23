@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	id            int
+	Id            int
 	Username      string
 	password_hash string
 	email         string
@@ -44,7 +44,7 @@ func (us *UserService) Create(username, password, email string, user_type int) (
 		INSERT INTO users (username, password_hash, email, user_type)
 		VALUES ($1, $2, $3, $4) RETURNING id`, username, passwordHash, email, user_type)
 
-	err = row.Scan(&user.id)
+	err = row.Scan(&user.Id)
 	if err != nil {
 		return nil, fmt.Errorf("UserService.Create failed : %w", err)
 	}
@@ -64,7 +64,7 @@ func (us *UserService) Authenticate(username, password string) (*User, error) {
 	row := us.DB.QueryRow(`
 	SELECT id, password_hash FROM users WHERE username=$1`, username)
 
-	err := row.Scan(&user.id, &user.password_hash)
+	err := row.Scan(&user.Id, &user.password_hash)
 	if err != nil {
 		return nil, fmt.Errorf("UserService.Authenticate failed : %w", err)
 	}

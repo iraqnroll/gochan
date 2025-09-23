@@ -13,7 +13,8 @@ type Users struct {
 		Login  Template
 		Create Template
 	}
-	UserService *models.UserService
+	UserService    *models.UserService
+	SessionService *models.SessionService
 }
 
 func (u Users) LoginForm(w http.ResponseWriter, r *http.Request) {
@@ -45,16 +46,17 @@ func (u Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Authentication successful, add the Set-Cookie header before writting the response
-	cookie := http.Cookie{
-		Name:     "username",
-		Value:    user.Username,
-		Path:     "/",
-		HttpOnly: true,
+	//Create a new active session on login
+	session, err := u.SessionService.CreateSession(user.Id)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went horribly wrong...", http.StatusInternalServerError)
+		return
 	}
-	http.SetCookie(w, &cookie)
 
-	fmt.Fprintf(w, "User authenticated: %v", user)
+	//Authentication successful, add the Set-Cookie header before writting the response
+	setCookie(w, CookieSession, session.Token)
+	http.Redirect(w, r, "/admin/me", http.StatusFound)
 }
 
 func (u Users) Create(w http.ResponseWriter, r *http.Request) {
@@ -77,11 +79,38 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	username, err := r.Cookie("username")
+	tokenCookie, err := readCookie(r, CookieSession)
 	if err != nil {
-		fmt.Fprintf(w, "The auth cookie could not be read.")
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	fmt.Fprintf(w, "Auth cookie: %s", username.Value)
+	user, err := u.SessionService.GetUser(tokenCookie)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	fmt.Fprintf(w, "Current user: %s", user.Username)
+}
+
+func (u Users) Logout(w http.ResponseWriter, r *http.Request) {
+	token, err := readCookie(r, CookieSession)
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	err = u.SessionService.DeleteSession(token)
+	if err != nil {
+		fmt.Println("Logout failed : %w", err)
+		http.Error(w, "Something went horribly wrong...", http.StatusInternalServerError)
+		return
+	}
+
+	//Delete the session cookie and redirect to homepage
+	deleteCookie(w, CookieSession)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
