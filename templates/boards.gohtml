@@ -1,0 +1,85 @@
+{{template "header" .}}
+<div>
+    [board list]
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Uri</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Created</th>
+            <th>Last updated</th>
+            <th>Owner</ht>
+            <th>Delete board</ht>
+        </tr>
+        {{range .}}
+            <tr>
+                <td>{{.Id}}</td>
+                <td>{{.Uri}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Description}}</td>
+                <td>{{.Date_created}}</td>
+                <td>{{.Date_updated}}</td>
+                <td>{{.OwnerUsername}}</td>
+                <td>
+                    <form action="/admin/boards/delete" method="post" class="inline pr-4">
+                        <div class="hidden">
+                            {{csrfField}}
+                        </div>
+                        <div class="hidden">
+                            <input name="boardId" value="{{.Id}}"/>
+                        </div>
+                        <button type="submit">[X]</button>
+                    </form>
+                </td>
+            </tr>
+        {{end}}
+    </table>
+</div>
+<div>
+    <h3>[Create a new board]</h4>
+    <form action="/admin/boards/create" method="post">
+            <div class="hidden">
+                {{csrfField}}
+            </div>
+            <div>
+                <label for="uri">[uri]</label>
+                <input
+                    name="uri"
+                    id="uri"
+                    type="text"
+                    placeholder="/byb/"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+            <label for="name">[name]</label>
+                <input
+                    name="name"
+                    id="name"
+                    type="text"
+                    placeholder="Board name"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+                <label for="description">[description]</label>
+                <input
+                    name="description"
+                    id="description"
+                    type="text"
+                    placeholder="This board is about..."
+                    class="rounded"
+                />
+            </div>
+            </div>
+            <div class="py-4">
+                <button type="submit">
+                    [create]
+                </button>
+            </div>
+        </form>
+</div>
+{{template "footer" .}}

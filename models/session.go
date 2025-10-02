@@ -49,22 +49,13 @@ func (ss *SessionService) CreateSession(userId int) (*Session, error) {
 	//TODO: Add session expiration logic, we dont want to keep sessions active indefinitely...
 
 	row := ss.DB.QueryRow(`
-		UPDATE sessions
+		INSERT INTO sessions (user_id, token_hash)
+		VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE
 		SET token_hash = $2
-		WHERE user_id = $1
+		WHERE sessions.user_id = $1
 		RETURNING id;`, session.UserId, session.TokenHash)
 
 	err = row.Scan(&session.Id)
-	if err == sql.ErrNoRows {
-		//Session record doesn't exist for this user, create a new one..
-		row = ss.DB.QueryRow(`
-		INSERT INTO sessions (user_id, token_hash)
-		VALUES ($1, $2)
-		RETURNING id;`, session.UserId, session.TokenHash)
-
-		err = row.Scan(&session.Id)
-	}
-
 	if err != nil {
 		return nil, fmt.Errorf("SessionService.Create error : %w", err)
 	}
@@ -76,22 +67,14 @@ func (ss *SessionService) GetUser(token string) (*User, error) {
 	tokenHash := ss.HashToken(token)
 	var user User
 	row := ss.DB.QueryRow(`
-		SELECT user_id
+		SELECT users.id,
+			users.username,
+			users.password_hash
 		FROM sessions
-		WHERE token_hash = $1`, tokenHash)
+		INNER JOIN users ON users.id = sessions.user_id
+		WHERE sessions.token_hash = $1`, tokenHash)
 
-	err := row.Scan(&user.Id)
-	if err != nil {
-		return nil, fmt.Errorf("SessionService.GetUser error : %w", err)
-	}
-
-	//Retrieve the user
-	//TODO: check user_id field before querying the users table, we dont need to make unnecessary calls to DB if we didn't retrieve a valid user id from active sessions.
-	row = ss.DB.QueryRow(`
-		SELECT username, password_hash
-		FROM users WHERE id = $1`, user.Id)
-
-	err = row.Scan(&user.Username, &user.password_hash)
+	err := row.Scan(&user.Id, &user.Username, &user.password_hash)
 	if err != nil {
 		return nil, fmt.Errorf("SessionService.GetUser error : %w", err)
 	}

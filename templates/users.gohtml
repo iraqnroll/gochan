@@ -1,0 +1,93 @@
+{{template "header" .}}
+<div>
+    [user list]
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Last updated</th>
+            <th>User type</ht>
+            <th>Delete user</ht>
+        </tr>
+        {{range .}}
+            <tr>
+                <td>{{.Id}}</td>
+                <td>{{.Username}}</td>
+                <td>{{.Email}}</td>
+                <td>{{.Date_created}}</td>
+                <td>{{.Date_updated}}</td>
+                <td>{{.User_type}}</td>
+                <td>
+                    <form action="/admin/users/delete" method="post" class="inline pr-4">
+                        <div class="hidden">
+                            {{csrfField}}
+                        </div>
+                        <div class="hidden">
+                            <input name="userId" value="{{.Id}}"/>
+                        </div>
+                        <button type="submit">[X]</button>
+                    </form>
+                </td>
+            </tr>
+        {{end}}
+    </table>
+</div>
+<div>
+    <h3>[Create a new user]</h4>
+    <form action="/admin/users/create" method="post">
+            <div class="hidden">
+                {{csrfField}}
+            </div>
+            <div>
+                <label for="username">[username]</label>
+                <input
+                    name="username"
+                    id="username"
+                    type="text"
+                    placeholder="bybmantas"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+            <label for="email">[email]</label>
+                <input
+                    name="email"
+                    id="email"
+                    type="text"
+                    placeholder="bybys@bybys.lt"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+                <label for="password">[password]</label>
+                <input
+                    name="password"
+                    id="password"
+                    type="password"
+                    placeholder="Password..."
+                    required
+                    class="rounded"
+                />
+            </div>
+            <label for="user_type">[user type]</label>
+                <input
+                    name="user_type"
+                    id="user_type"
+                    type="text"
+                    placeholder="1"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-4">
+                <button type="submit">
+                    [create]
+                </button>
+            </div>
+        </form>
+</div>
+{{template "footer" .}}

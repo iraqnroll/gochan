@@ -15,6 +15,7 @@ import (
 )
 
 func main() {
+	//1. Setup DB
 	cfg := models.DefaultPostgresConfig()
 	db, err := models.Open(cfg)
 	if err != nil {
@@ -27,7 +28,12 @@ func main() {
 		panic(err)
 	}
 
+	//2. Setup services
 	userService := models.UserService{
+		DB: db,
+	}
+
+	boardService := models.BoardService{
 		DB: db,
 	}
 
@@ -38,21 +44,29 @@ func main() {
 	usersC := controllers.Users{
 		UserService:    &userService,
 		SessionService: &sessionService,
+		BoardService:   &boardService,
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
 
+	//3. Setup Middlewares
 	csrfMw := csrf.Protect(
 		[]byte("gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"),
 		csrf.Secure(false),
 		csrf.TrustedOrigins([]string{"localhost:3000"}),
 	)
 
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
+
+	r.Use(middleware.Logger)
 	r.Use(csrfMw)
+	r.Use(umw.SetUser)
 
 	// TODO: Make the usage of embedded templates optional.
 
+	//4. Setup controllers
 	r.Get("/", controllers.StaticHandler(
 		views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))))
 
@@ -63,17 +77,31 @@ func main() {
 		views.Must(views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))))
 
 	usersC.Templates.Login = views.Must(views.ParseFS(templates.FS, "login.gohtml", "tailwind.gohtml"))
-	usersC.Templates.Create = views.Must(views.ParseFS(templates.FS, "createUser.gohtml", "tailwind.gohtml"))
+	usersC.Templates.Admin = views.Must(views.ParseFS(templates.FS, "admin.gohtml", "tailwind.gohtml"))
+	usersC.Templates.Users = views.Must(views.ParseFS(templates.FS, "users.gohtml", "tailwind.gohtml"))
+	usersC.Templates.Boards = views.Must(views.ParseFS(templates.FS, "boards.gohtml", "tailwind.gohtml"))
 
+	//5. Setup routes
 	r.Get("/login", usersC.LoginForm)
 	r.Post("/login", usersC.Login)
 
 	r.Post("/logout", usersC.Logout)
 
-	r.Get("/create", usersC.CreateForm)
-	r.Post("/create", usersC.Create)
+	//Admin panel routes (only accessible to authenticated users)
+	r.Route("/admin", func(r chi.Router) {
+		r.Use(umw.RequireUser)
+		r.Get("/", usersC.AdminForm)
 
-	r.Get("/admin/me", usersC.CurrentUser)
+		//User management
+		r.Get("/users", usersC.UsersForm)
+		r.Post("/users/create", usersC.Create)
+		r.Post("/users/delete", usersC.Delete)
+
+		//Board management
+		r.Get("/boards", usersC.BoardsForm)
+		r.Post("/boards/create", usersC.CreateBoard)
+		r.Post("/boards/delete", usersC.DeleteBoard)
+	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)
