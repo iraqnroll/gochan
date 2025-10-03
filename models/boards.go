@@ -22,6 +22,23 @@ type BoardDto struct {
 	Uri         string
 	Name        string
 	Description string
+	Threads     []ThreadDto
+}
+
+type ThreadDto struct {
+	Id      int
+	Posts   []PostDto
+	Locked  bool
+	BoardId int
+}
+
+type PostDto struct {
+	Id            int
+	ThreadId      int
+	Identifier    string
+	Content       string
+	PostTimestamp string
+	IsOP          bool
 }
 
 type BoardService struct {
@@ -124,6 +141,64 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 		}
 
 		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
+	}
+
+	//Since we found a valid registered board, we populate it with content :
+	//TODO: Refactor this garbage, optimally we'd fetch all our board posts/threads with a single query....
+	threads, err := bs.DB.Query(`
+		SELECT id,
+			locked,
+			board_id
+		FROM threads
+		WHERE board_id = $1`, result.Id)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &result, nil
+		}
+		return &result, fmt.Errorf("BoardService.GetBoard threads failed : %w", err)
+	}
+	defer threads.Close()
+
+	for threads.Next() {
+		var thread ThreadDto
+		err = threads.Scan(&thread.Id, &thread.Locked, &thread.BoardId)
+
+		if err != nil {
+			fmt.Println("BoardService.GetBoard thread loop failed : %w", err)
+		}
+		result.Threads = append(result.Threads, thread)
+	}
+
+	posts, err := bs.DB.Query(`SELECT 
+			p.id,
+			p.thread_id,
+			p.identifier,
+			p.content,
+			COALESCE(to_char(p.post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp,
+			p.is_op
+		FROM posts AS p
+		INNER JOIN threads AS th ON th.Id = p.thread_id
+		WHERE th.board_id = $1`, result.Id)
+
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
+	}
+	defer posts.Close()
+
+	postHashMap := make(map[int][]PostDto)
+
+	for posts.Next() {
+		var post PostDto
+		err := rows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
+		if err != nil {
+			fmt.Println("BoardService.GetBoard post loop failed : %w", err)
+		}
+		postHashMap[post.ThreadId] = append(postHashMap[post.ThreadId], post)
+	}
+
+	for _, thread := range result.Threads {
+		thread.Posts = postHashMap[thread.Id]
 	}
 
 	return &result, nil

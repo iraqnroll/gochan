@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -17,7 +16,6 @@ type Boards struct {
 
 func (b Boards) BoardForm(w http.ResponseWriter, r *http.Request) {
 	boardUri := chi.URLParam(r, "boardUri")
-	fmt.Println("potential board uri : ", boardUri)
 	board, err := b.BoardService.GetBoard(boardUri)
 	if err != nil {
 		if err == sql.ErrNoRows {
