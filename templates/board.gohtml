@@ -1,0 +1,12 @@
+{{template "header" .}}
+<div class="px-6">
+    {{template "boardHeader" .}}
+</div>
+{{template "footer" .}}
+
+{{define "boardHeader"}}
+    <h1>/{{.Uri}}/ - {{.Name}}</h1>
+    <div>
+        ({{.Description}})
+    </div>
+{{end}}

@@ -18,9 +18,10 @@ type Board struct {
 }
 
 type BoardDto struct {
-	Id   int
-	Uri  string
-	Name string
+	Id          int
+	Uri         string
+	Name        string
+	Description string
 }
 
 type BoardService struct {
@@ -94,7 +95,7 @@ func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
 func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
 	var result []BoardDto
 
-	rows, err := bs.DB.Query(`SELECT id, uri, name FROM boards`)
+	rows, err := bs.DB.Query(`SELECT id, uri, name, description FROM boards`)
 
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
@@ -103,7 +104,7 @@ func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
 
 	for rows.Next() {
 		var board BoardDto
-		err := rows.Scan(&board.Id, &board.Uri, &board.Name)
+		err := rows.Scan(&board.Id, &board.Uri, &board.Name, &board.Description)
 		if err != nil {
 			fmt.Println("BoardService.GetBoardList loop failed : %w", err)
 		}
@@ -111,4 +112,19 @@ func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
 	}
 
 	return result, nil
+}
+
+func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
+	var result BoardDto
+	rows := bs.DB.QueryRow(`SELECT id, uri, name, description FROM boards WHERE uri = $1`, uri)
+	err := rows.Scan(&result.Id, &result.Uri, &result.Name, &result.Description)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
+	}
+
+	return &result, nil
 }
