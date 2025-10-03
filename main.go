@@ -47,6 +47,10 @@ func main() {
 		BoardService:   &boardService,
 	}
 
+	homeC := controllers.Home{
+		BoardService: &boardService,
+	}
+
 	r := chi.NewRouter()
 
 	//3. Setup Middlewares
@@ -67,15 +71,16 @@ func main() {
 	// TODO: Make the usage of embedded templates optional.
 
 	//4. Setup controllers
-	r.Get("/", controllers.StaticHandler(
-		views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))))
-
 	r.Get("/contact", controllers.StaticHandler(
 		views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))))
 
 	r.Get("/faq", controllers.FAQ(
 		views.Must(views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))))
 
+	//Home
+	homeC.Home = views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))
+
+	//Admin/User
 	usersC.Templates.Login = views.Must(views.ParseFS(templates.FS, "login.gohtml", "tailwind.gohtml"))
 	usersC.Templates.Admin = views.Must(views.ParseFS(templates.FS, "admin.gohtml", "tailwind.gohtml"))
 	usersC.Templates.Users = views.Must(views.ParseFS(templates.FS, "users.gohtml", "tailwind.gohtml"))
@@ -86,6 +91,8 @@ func main() {
 	r.Post("/login", usersC.Login)
 
 	r.Post("/logout", usersC.Logout)
+
+	r.Get("/", homeC.HomePage)
 
 	//Admin panel routes (only accessible to authenticated users)
 	r.Route("/admin", func(r chi.Router) {

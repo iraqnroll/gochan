@@ -17,13 +17,18 @@
         <a class="hover:text-gray-400 pr-8" href="/faq">[faq]</a>
       </div>
       {{if currentUser}}
-        <div class="space-x-4">
-          <form action="/logout" method="post" class="inline pr-4">
-            <div class="hidden">
-              {{csrfField}}
-            </div>
-            <button type="submit">[logout]</button>
-          </form>
+        <div class="flex-grow">
+          <div>
+            <a class="hover:text-gray-400 pr-8" href="/admin">[admin panel]</a>
+          </div>
+          <div class="space-x-4">
+            <form action="/logout" method="post" class="inline pr-4">
+              <div class="hidden">
+                {{csrfField}}
+              </div>
+              <button type="submit">[logout]</button>
+            </form>
+          </div>
         </div>
       {{else}}
         <div>

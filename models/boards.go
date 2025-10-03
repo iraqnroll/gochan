@@ -17,6 +17,12 @@ type Board struct {
 	OwnerUsername string
 }
 
+type BoardDto struct {
+	Id   int
+	Uri  string
+	Name string
+}
+
 type BoardService struct {
 	DB *sql.DB
 }
@@ -69,13 +75,35 @@ func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
 		INNER JOIN users AS usr ON usr.id = b.ownerId`)
 
 	if err != nil {
-		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
+		return nil, fmt.Errorf("BoardService.GetAdminBoardList failed : %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var board Board
 		err := rows.Scan(&board.Id, &board.Uri, &board.Name, &board.Description, &board.Date_created, &board.Date_updated, &board.OwnerUsername)
+		if err != nil {
+			fmt.Println("BoardService.GetAdminBoardList loop failed : %w", err)
+		}
+		result = append(result, board)
+	}
+
+	return result, nil
+}
+
+func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
+	var result []BoardDto
+
+	rows, err := bs.DB.Query(`SELECT id, uri, name FROM boards`)
+
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var board BoardDto
+		err := rows.Scan(&board.Id, &board.Uri, &board.Name)
 		if err != nil {
 			fmt.Println("BoardService.GetBoardList loop failed : %w", err)
 		}

@@ -1,5 +1,18 @@
 {{template "header" .}}
-    <div class="px-6">
-        <h1 class="py-4 text-4x1 semibold tracking-tight">GOCHAN COMING SOON !</h1>
+    <div>
+        {{template "boardList" .Boards}}
     </div>
 {{template "footer" .}}
+
+{{define "boardList"}}
+    <h4>
+        [boards] :
+    </h4>
+    <ul>
+        {{range .}}
+            <li>
+                <a href="/{{.Uri}}">/{{.Uri}}/ - {{.Name}}</a>
+            </li>
+        {{end}}
+    </ul>
+{{end}}

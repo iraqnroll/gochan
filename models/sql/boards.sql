@@ -6,5 +6,5 @@ CREATE TABLE boards (
     description TEXT,
     date_created TIMESTAMP NOT NULL DEFAULT NOW(),
     date_updated TIMESTAMP,
-    ownerId INT UNIQUE REFERENCES users(id) ON DELETE CASCADE
+    ownerId INT REFERENCES users(id) ON DELETE CASCADE
 );
