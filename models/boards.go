@@ -28,6 +28,7 @@ type BoardDto struct {
 type ThreadDto struct {
 	Id      int
 	Posts   []PostDto
+	Topic   string
 	Locked  bool
 	BoardId int
 }
@@ -148,7 +149,8 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 	threads, err := bs.DB.Query(`
 		SELECT id,
 			locked,
-			board_id
+			board_id,
+			topic
 		FROM threads
 		WHERE board_id = $1`, result.Id)
 
@@ -162,7 +164,7 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 
 	for threads.Next() {
 		var thread ThreadDto
-		err = threads.Scan(&thread.Id, &thread.Locked, &thread.BoardId)
+		err = threads.Scan(&thread.Id, &thread.Locked, &thread.BoardId, &thread.Topic)
 
 		if err != nil {
 			fmt.Println("BoardService.GetBoard thread loop failed : %w", err)
@@ -170,8 +172,7 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 		result.Threads = append(result.Threads, thread)
 	}
 
-	posts, err := bs.DB.Query(`SELECT 
-			p.id,
+	postRows, err := bs.DB.Query(`SELECT p.id,
 			p.thread_id,
 			p.identifier,
 			p.content,
@@ -184,22 +185,118 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
 	}
-	defer posts.Close()
+	defer postRows.Close()
 
 	postHashMap := make(map[int][]PostDto)
 
-	for posts.Next() {
+	for postRows.Next() {
 		var post PostDto
-		err := rows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
+		err = postRows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
 		if err != nil {
 			fmt.Println("BoardService.GetBoard post loop failed : %w", err)
 		}
 		postHashMap[post.ThreadId] = append(postHashMap[post.ThreadId], post)
 	}
 
-	for _, thread := range result.Threads {
-		thread.Posts = postHashMap[thread.Id]
+	for i := range result.Threads {
+		threadId := result.Threads[i].Id
+		result.Threads[i].Posts = postHashMap[threadId]
 	}
 
 	return &result, nil
+}
+
+func (bs *BoardService) GetThread(id int) (*ThreadDto, error) {
+	var result ThreadDto
+
+	row := bs.DB.QueryRow(`
+		SELECT id,
+			locked,
+			board_id,
+			topic
+		FROM threads
+		WHERE id = $1`, id)
+
+	err := row.Scan(&result.Id, &result.Locked, &result.BoardId, &result.Topic)
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.GetBoard threads failed : %w", err)
+	}
+
+	postRows, err := bs.DB.Query(`SELECT id,
+			thread_id,
+			identifier,
+			content,
+			COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp,
+			is_op
+		FROM posts
+		WHERE thread_id= $1`, result.Id)
+
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.GetThread failed : %s", err)
+	}
+	defer postRows.Close()
+
+	for postRows.Next() {
+		var post PostDto
+		err = postRows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
+		if err != nil {
+			fmt.Printf("BoardService.GetThread failed : %s", err)
+			continue
+		}
+		result.Posts = append(result.Posts, post)
+	}
+
+	return &result, nil
+}
+
+func (bs *BoardService) CreateThread(board_id int, topic, identifier, content string) (*ThreadDto, error) {
+	post := PostDto{
+		Identifier: identifier,
+		Content:    content,
+		IsOP:       true,
+	}
+
+	result := ThreadDto{
+		BoardId: board_id,
+		Locked:  false,
+		Topic:   topic,
+	}
+
+	row := bs.DB.QueryRow(`
+		INSERT INTO threads(board_id, topic)
+		VALUES ($1, $2) RETURNING id, to_char(date_created, 'YYYY-MM-DD HH24:MI:SS')`, board_id, topic)
+
+	err := row.Scan(&result.Id, &post.PostTimestamp)
+
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.CreateThread failed while creating a new thread : %w", err)
+	}
+
+	//We successfully created a new thread, attach the OP's post to it before returning the new thread
+	row = bs.DB.QueryRow(`
+		INSERT INTO posts(thread_id, identifier, content, post_timestamp, is_op)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id`, result.Id, post.Identifier, post.Content, post.PostTimestamp, post.IsOP)
+
+	err = row.Scan(&post.Id)
+
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.CreateThread failed while attaching OP post to new thread : %w", err)
+	}
+
+	result.Posts = append(result.Posts, post)
+
+	return &result, nil
+}
+
+func (bs *BoardService) CheckBoard(uri string) (int, error) {
+	var board_id int
+
+	rows := bs.DB.QueryRow(`SELECT id FROM boards WHERE uri = $1`, uri)
+	err := rows.Scan(&board_id)
+
+	if err != nil {
+		return -1, fmt.Errorf("BoardService.CheckBoard failed : %w", err)
+	}
+
+	return board_id, nil
 }

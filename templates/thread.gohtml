@@ -1,0 +1,12 @@
+{{template "header" .}}
+<div>
+    {{.Topic}} :
+    <ol>
+        {{range .Posts}}
+            <li>
+                {{.Identifier}} [{{.PostTimestamp}}] Nr. {{.Id}} {{if .IsOP}} (OP) {{end}} : {{.Content}}
+            </li>
+        {{end}}
+    </ol>
+</div>
+{{template "footer" .}}

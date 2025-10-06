@@ -92,6 +92,7 @@ func main() {
 
 	//Boards
 	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "tailwind.gohtml"))
+	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "tailwind.gohtml"))
 
 	//5. Setup routes
 
@@ -107,6 +108,9 @@ func main() {
 
 		//Boards
 		r.Get("/{boardUri}", boardsC.BoardForm)
+		r.Post("/{boardUri}", boardsC.NewThread)
+
+		r.Get("/{boardUri}/{threadId}", boardsC.ThreadForm)
 	})
 
 	//Admin panel routes (only accessible to authenticated users)
@@ -133,5 +137,3 @@ func main() {
 
 	http.ListenAndServe(":3000", r)
 }
-
-//9.9

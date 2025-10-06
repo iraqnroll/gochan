@@ -2,6 +2,10 @@
 <div class="px-6">
     {{template "boardHeader" .}}
 </div>
+<div class="px-6">
+    {{template "newThread" .}}
+</div>
+{{template "threadSection" .}}
 {{template "footer" .}}
 
 {{define "boardHeader"}}
@@ -9,4 +13,71 @@
     <div>
         ({{.Description}})
     </div>
+{{end}}
+
+{{define "newThread"}}
+<h3>[Create a new thread]</h4>
+    <form action="/{{.Uri}}" method="post">
+            <div class="hidden">
+                {{csrfField}}
+            </div>
+            <div>
+                <label for="topic">[topic]</label>
+                <input
+                    name="threadTopic"
+                    id="threadTopic"
+                    type="text"
+                    placeholder="bybmantas"
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+            <label for="identifier">[identifier]</label>
+                <input
+                    name="threadIdentifier"
+                    id="threadIdentifier"
+                    type="text"
+                    placeholder="..."
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-2">
+                <label for="content">[content]</label>
+                <input
+                    name="threadContent"
+                    id="threadContent"
+                    type="text"
+                    placeholder="..."
+                    required
+                    class="rounded"
+                />
+            </div>
+            <div class="py-4">
+                <button type="submit">
+                    [create]
+                </button>
+            </div>
+        </form>
+{{end}}
+
+{{define "threadSection"}}
+    {{$boardUri := .Uri }}
+    {{range .Threads}}
+        <div>
+            <a href="{{$boardUri}}/{{.Id}}">{{.Topic}}</a> : 
+        </div>
+        <ol>
+            {{template "postSection" .Posts}}
+        </ol>
+    {{end}}
+{{end}}
+
+{{define "postSection"}}
+    {{range .}}
+            <li>
+                {{.Identifier}} [{{.PostTimestamp}}] {{if .IsOP}} (OP) {{end}} : {{.Content}}
+            </li>
+        {{end}}
 {{end}}

@@ -1,6 +1,7 @@
 CREATE TABLE threads (
     id SERIAL PRIMARY KEY,
     board_id INT REFERENCES boards(id) ON DELETE CASCADE,
-    date_created TIMESTAMP NOT NULL,
+    topic TEXT NOT NULL,
+    date_created TIMESTAMP NOT NULL DEFAULT NOW(),
     locked BOOLEAN NOT NULL DEFAULT(FALSE)
 )
