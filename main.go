@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 
+	"github.com/iraqnroll/gochan/config"
 	"github.com/iraqnroll/gochan/controllers"
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/templates"
@@ -16,8 +20,8 @@ import (
 
 func main() {
 	//1. Setup DB
-	cfg := models.DefaultPostgresConfig()
-	db, err := models.Open(cfg)
+	cfg := config.InitConfig()
+	db, err := config.OpenDBConn(cfg.Database)
 	if err != nil {
 		panic(err)
 	}
@@ -41,18 +45,24 @@ func main() {
 		DB: db,
 	}
 
+	//3. Setup reusable page data.
+	basePageData := SetupReusablePageData(&boardService, cfg)
+
 	usersC := controllers.Users{
 		UserService:    &userService,
 		SessionService: &sessionService,
 		BoardService:   &boardService,
+		PageData:       basePageData,
 	}
 
 	homeC := controllers.Home{
-		BoardService: &boardService,
+		BoardService:   &boardService,
+		GlobalSettings: &cfg.Global,
 	}
 
 	boardsC := controllers.Boards{
 		BoardService: &boardService,
+		PageData:     basePageData,
 	}
 
 	r := chi.NewRouter()
@@ -75,24 +85,25 @@ func main() {
 	// TODO: Make the usage of embedded templates optional.
 
 	//Static
-	r.Get("/contact", controllers.StaticHandler(
-		views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))))
+	workDir, _ := os.Getwd()
+	filesDir := http.Dir(filepath.Join(workDir, "static"))
+	FileServer(r, "/static", filesDir)
 
 	r.Get("/faq", controllers.FAQ(
-		views.Must(views.ParseFS(templates.FS, "faq.gohtml", "tailwind.gohtml"))))
+		views.Must(views.ParseFS(templates.FS, "faq.gohtml", "head_template.gohtml")), basePageData))
 
 	//Home
-	homeC.Home = views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))
+	homeC.Home = views.Must(views.ParseFS(templates.FS, "home.gohtml", "head_template.gohtml"))
 
 	//Admin/User
-	usersC.Templates.Login = views.Must(views.ParseFS(templates.FS, "login.gohtml", "tailwind.gohtml"))
-	usersC.Templates.Admin = views.Must(views.ParseFS(templates.FS, "admin.gohtml", "tailwind.gohtml"))
-	usersC.Templates.Users = views.Must(views.ParseFS(templates.FS, "users.gohtml", "tailwind.gohtml"))
-	usersC.Templates.Boards = views.Must(views.ParseFS(templates.FS, "boards.gohtml", "tailwind.gohtml"))
+	usersC.Templates.Login = views.Must(views.ParseFS(templates.FS, "login.gohtml", "head_template.gohtml"))
+	usersC.Templates.Admin = views.Must(views.ParseFS(templates.FS, "admin.gohtml", "head_template.gohtml"))
+	usersC.Templates.Users = views.Must(views.ParseFS(templates.FS, "users.gohtml", "head_template.gohtml"))
+	usersC.Templates.Boards = views.Must(views.ParseFS(templates.FS, "boards.gohtml", "head_template.gohtml"))
 
 	//Boards
-	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "tailwind.gohtml"))
-	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "tailwind.gohtml"))
+	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "head_template.gohtml"))
+	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "head_template.gohtml"))
 
 	//5. Setup routes
 
@@ -136,4 +147,43 @@ func main() {
 	fmt.Println("Starting the server on :3000...")
 
 	http.ListenAndServe(":3000", r)
+}
+
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("FileServer does not permit any URL parameters.")
+	}
+
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
+}
+
+func SetupReusablePageData(bs *models.BoardService, cfg *config.Config) views.BasePageData {
+	boards, err := bs.GetBoardList()
+	if err != nil {
+		panic(err)
+	}
+
+	navbar := views.NavbarData{
+		BoardList: boards,
+	}
+
+	footer := views.FooterData{
+		Sitename: cfg.Global.Shortname,
+	}
+
+	return views.BasePageData{
+		Navbar: navbar,
+		Footer: footer,
+	}
 }

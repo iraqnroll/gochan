@@ -18,7 +18,21 @@ type Template struct {
 	htmlTpl *template.Template
 }
 
-func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface{}) {
+type NavbarData struct {
+	BoardList []models.BoardDto
+}
+
+type FooterData struct {
+	Sitename string
+}
+
+type BasePageData struct {
+	Navbar   NavbarData
+	Footer   FooterData
+	PageData any
+}
+
+func (t Template) Execute(w http.ResponseWriter, r *http.Request, data any) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tpl, err := t.htmlTpl.Clone()
 	if err != nil {
@@ -33,6 +47,9 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 			},
 			"currentUser": func() *models.User {
 				return context.User(r.Context())
+			},
+			"boardList": func() ([]models.BoardDto, error) {
+				return nil, nil
 			},
 		},
 	)

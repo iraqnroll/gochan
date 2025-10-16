@@ -1,0 +1,132 @@
+body {
+	background: #ffe;
+	color: #800000;
+	font-family: serif;
+	font-size: 16px;
+}
+
+nav {
+	display: block;
+}
+
+header {
+	display: block;
+	text-align: center;
+}
+
+header div.subtitle {
+	color: black;
+	font-size: 10pt;
+}
+
+ul {
+	display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    padding-inline-start: 40px;
+}
+
+nav.menu-bar ul {
+	list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav.menu-bar li {
+	display: inline-block;
+	float: none;
+	box-shadow: 1px 1px 2px #a24f17cc;
+	border-top: 2px solid #E28F91;
+	border-left: 2px solid #E28F91;
+    border-bottom: 2px solid #800509;
+    border-right: 2px solid #800509;
+}
+
+nav.menu-bar li:not(:first-child) {
+    margin-left: 15px;
+}
+
+nav.menu-bar li div.active {
+	border-top: 1px solid #800509;
+    border-left: 1px solid #800509;
+    border-bottom: 1px solid #E28F91;
+    border-right: 1px solid #E28F91;
+}
+
+nav.menu-bar li a, nav.menu-bar form {
+	background-color: #AF0A0F;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 3px;
+    height: 15px;
+    border: 1px outset #af0a0f;
+    border-top: 1px solid #DA8E90;
+    border-left: 1px solid #DA8E90;
+    border-bottom: 1px solid #76070B;
+    border-right: 1px solid #76070B;
+}
+
+nav.menu-bar button {
+	all: unset;
+}
+
+nav.menu-bar {
+	margin: 15px auto;
+	text-align: center;
+	max-width: 700px;
+}
+
+div.title h1 {
+	font-size: 24px;
+}
+
+div.banwrap {
+	margin: 15px auto !important;
+    box-shadow: 0px 0px 3px rgb(162, 79, 23);
+    background: #fca;
+    max-width: 700px;
+    border: 1px outset #fca;
+    border-top: 1px solid #FFEFE5;
+    border-left: 1px solid #FFEFE5;
+    border-bottom: 1px solid #8d715e;
+    border-right: 1px solid #8d715e;
+}
+
+div.ban {
+	margin: 2px !important;
+    box-shadow: inset 0px 0px 3px #4d4d4d7d;
+    border: 1px inset #fca;
+    border-top: 1px solid #8D715E;
+    border-left: 1px solid #8D715E;
+    border-bottom: 1px solid #FFEFE5;
+    border-right: 1px solid #FFEFE5;
+	background: white;
+}
+
+div.ban h2 {
+	box-shadow: 0px 2px 2px -1px #8c8c8c7d;
+    height: 20px;
+    border: 1px outset #fca;
+    border-top: 1px solid #FFEFE5;
+    border-left: 1px solid #FFEFE5;
+    border-bottom: 1px solid #8d715e;
+    border-right: 1px solid #8d715e;
+	padding: 3px 7px;
+	font-size: 12pt;
+	margin: 0;
+	background: #fca;
+}
+
+footer {
+	display: block;
+}
+
+footer p {
+	margin-top: 20px;
+	text-align: center;
+	font-size: 12px;
+}

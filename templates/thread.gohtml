@@ -1,12 +1,14 @@
-{{template "header" .}}
+{{template "header" .PageData}}
+
 <div>
-    {{.Topic}} :
+    {{.PageData.Topic}} :
     <ol>
-        {{range .Posts}}
+        {{range .PageData.Posts}}
             <li>
                 {{.Identifier}} [{{.PostTimestamp}}] Nr. {{.Id}} {{if .IsOP}} (OP) {{end}} : {{.Content}}
             </li>
         {{end}}
     </ol>
 </div>
-{{template "footer" .}}
+
+{{template "footer" .PageData}}

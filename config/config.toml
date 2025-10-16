@@ -1,0 +1,11 @@
+[global]
+shortname = "Gochan"
+subtitle = "A modern imageboard engine written in Go!"
+
+[database]
+host = "localhost"
+port = "5432"
+user = "admin"
+password = "changethepassword"
+database = "gochan"
+sslmode = "disable"

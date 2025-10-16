@@ -1,16 +1,15 @@
+{{define "header"}}
 <!doctype html>
 <html>
-    <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" type="text/css" id="stylesheet" href="static/stylesheets/gochan.css">
-    </head>
-    <body>
-        <header>
-            <h1>{{.Shortname}}</h1>
-            <div class="subtitle">{{.Subtitle}}</div>
-        </header>
-        <nav class="menu-bar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" type="text/css" id="stylesheet" href="/static/stylesheets/gochan.css">
+  <!-- ... -->
+</head>
+<body>
+  <header>
+    <nav class="menu-bar">
             <ul>
                 <li>
                     <div class="active">
@@ -47,32 +46,20 @@
                 {{end}}
             </ul>
         </nav>
-        <div class="banwrap">
-            <div class="ban">
-                {{template "boardList" .Boards}}
-            </div>
-        </div>
-    </body>
-    <footer>
-        <p>
-            <span>Powered by <a href="https://github.com/iraqnroll/gochan">gochan</a></span>
-            <br>
-            <span>2025 - ?</span>
-        </p>
-    </footer>
-</html>
+  </header>
+{{end}}
 
-{{define "boardList"}}
-    <h2>
-        [boards] :
-    </h2>
-    <div>
-        <ul>
-            {{range .}}
-                <li>
-                    <a href="/{{.Uri}}">/{{.Uri}}/ - {{.Name}}</a>
-                </li>
-            {{end}}
-        </ul>
-    </div>
+{{define "footer"}}
+<!-- ... -->
+<footer>
+  <footer>
+    <p>
+      <span>Powered by <a href="https://github.com/iraqnroll/gochan">gochan</a></span>
+      <br>
+      <span>2025 - ?</span>
+    </p>
+  </footer>
+</footer>
+</body>
+</html>
 {{end}}

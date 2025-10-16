@@ -1,12 +1,14 @@
-{{template "header" .}}
+{{template "header" .PageData}}
+
 <div class="px-6">
-    {{template "boardHeader" .}}
+    {{template "boardHeader" .PageData}}
 </div>
 <div class="px-6">
-    {{template "newThread" .}}
+    {{template "newThread" .PageData}}
 </div>
-{{template "threadSection" .}}
-{{template "footer" .}}
+{{template "threadSection" .PageData}}
+
+{{template "footer" .PageData}}
 
 {{define "boardHeader"}}
     <h1>/{{.Uri}}/ - {{.Name}}</h1>

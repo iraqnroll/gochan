@@ -8,11 +8,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/views"
 )
 
 type Boards struct {
-	Board  Template
-	Thread Template
+	Board    Template
+	Thread   Template
+	PageData views.BasePageData
 
 	BoardService *models.BoardService
 }
@@ -30,8 +32,10 @@ func (b Boards) BoardForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	b.PageData.PageData = board
+
 	//If we get to this point we found a registered board, fill metadata and execute template
-	b.Board.Execute(w, r, board)
+	b.Board.Execute(w, r, b.PageData)
 }
 
 func (b Boards) ThreadForm(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +52,9 @@ func (b Boards) ThreadForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to fetch thread...", http.StatusInternalServerError)
 	}
 
-	b.Thread.Execute(w, r, result)
+	b.PageData.PageData = result
+
+	b.Thread.Execute(w, r, b.PageData)
 
 }
 

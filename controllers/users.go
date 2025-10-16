@@ -7,6 +7,7 @@ import (
 
 	"github.com/iraqnroll/gochan/context"
 	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/views"
 )
 
 type Users struct {
@@ -17,6 +18,8 @@ type Users struct {
 		Users  Template
 		Boards Template
 	}
+	PageData views.BasePageData
+
 	UserService    *models.UserService
 	SessionService *models.SessionService
 	BoardService   *models.BoardService
@@ -62,16 +65,16 @@ func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
 }
 
 func (u Users) LoginForm(w http.ResponseWriter, r *http.Request) {
-	u.Templates.Login.Execute(w, r, nil)
+	u.Templates.Login.Execute(w, r, u.PageData)
 }
 
 func (u Users) CreateForm(w http.ResponseWriter, r *http.Request) {
-	u.Templates.Create.Execute(w, r, nil)
+	u.Templates.Create.Execute(w, r, u.PageData)
 }
 
 func (u Users) AdminForm(w http.ResponseWriter, r *http.Request) {
 	//user := context.User(r.Context())
-	u.Templates.Admin.Execute(w, r, nil)
+	u.Templates.Admin.Execute(w, r, u.PageData)
 }
 
 func (u Users) UsersForm(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +83,8 @@ func (u Users) UsersForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to fetch user list"+err.Error(), http.StatusInternalServerError)
 	}
 
-	u.Templates.Users.Execute(w, r, data)
+	u.PageData.PageData = data
+	u.Templates.Users.Execute(w, r, u.PageData)
 }
 
 func (u Users) BoardsForm(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +93,8 @@ func (u Users) BoardsForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to fetch board list"+err.Error(), http.StatusInternalServerError)
 	}
 
-	u.Templates.Boards.Execute(w, r, data)
+	u.PageData.PageData = data
+	u.Templates.Boards.Execute(w, r, u.PageData)
 }
 
 func (u Users) Login(w http.ResponseWriter, r *http.Request) {

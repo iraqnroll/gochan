@@ -3,6 +3,8 @@ package controllers
 import (
 	"html/template"
 	"net/http"
+
+	"github.com/iraqnroll/gochan/views"
 )
 
 type Static struct {
@@ -15,7 +17,7 @@ func StaticHandler(tpl Template) http.HandlerFunc {
 	}
 }
 
-func FAQ(tpl Template) http.HandlerFunc {
+func FAQ(tpl Template, PageData views.BasePageData) http.HandlerFunc {
 	rules := []struct {
 		Rule     template.HTML
 		RuleInfo template.HTML
@@ -42,6 +44,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 		},
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, r, rules)
+		PageData.PageData = rules
+		tpl.Execute(w, r, PageData)
 	}
 }

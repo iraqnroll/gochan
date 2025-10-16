@@ -3,18 +3,21 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/iraqnroll/gochan/config"
 	"github.com/iraqnroll/gochan/models"
 )
 
 type Home struct {
-	Home         Template
-	BoardService *models.BoardService
+	Home           Template
+	BoardService   *models.BoardService
+	GlobalSettings *config.Global
 }
 
 func (h Home) HomePage(w http.ResponseWriter, r *http.Request) {
 	var data struct {
-		Boards []models.BoardDto
-		Test   string
+		Boards    []models.BoardDto
+		Shortname string
+		Subtitle  string
 	}
 
 	boards, err := h.BoardService.GetBoardList()
@@ -23,7 +26,8 @@ func (h Home) HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Boards = boards
-	data.Test = "String"
+	data.Shortname = h.GlobalSettings.Shortname
+	data.Subtitle = h.GlobalSettings.Subtitle
 
 	h.Home.Execute(w, r, data)
 }
