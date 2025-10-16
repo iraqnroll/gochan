@@ -1,13 +1,25 @@
 {{template "header" .}}
-    <div class="px-6">
-        <h2 class="py-4 text-4x1 semibold tracking-tight">[actions]</h2>
-        <ul>
-            <li>
-                <a href="/admin/users">[Manage users]</a>
-            </li>
-            <li>
-                <a href="/admin/boards">[Manage boards]</a>
-            </li>
-        </ul>
-    </div>
+    <header>
+        <h4>[Admin board]</h4>
+    </header>
+    {{template "admin-actions"}}
+
 {{template "footer" .}}
+
+{{define "admin-actions"}}
+    <div class="banwrap">
+        <div class="ban">
+            <h2>
+                [Actions] :
+            </h2>
+            <ul>
+                <li>
+                    <a href="/admin/users">[Manage users]</a>
+                </li>
+                <li>
+                    <a href="/admin/boards">[Manage boards]</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+{{end}}

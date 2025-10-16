@@ -26,11 +26,12 @@ type BoardDto struct {
 }
 
 type ThreadDto struct {
-	Id      int
-	Posts   []PostDto
-	Topic   string
-	Locked  bool
-	BoardId int
+	Id       int
+	Posts    []PostDto
+	Topic    string
+	Locked   bool
+	BoardId  int
+	BoardUri string
 }
 
 type PostDto struct {
@@ -210,14 +211,16 @@ func (bs *BoardService) GetThread(id int) (*ThreadDto, error) {
 	var result ThreadDto
 
 	row := bs.DB.QueryRow(`
-		SELECT id,
-			locked,
-			board_id,
-			topic
-		FROM threads
-		WHERE id = $1`, id)
+		SELECT th.id,
+			th.locked,
+			th.board_id,
+			th.topic,
+			brd.uri AS board_uri
+		FROM threads AS th
+		INNER JOIN boards brd ON brd.id = th.board_id
+		WHERE th.id = $1`, id)
 
-	err := row.Scan(&result.Id, &result.Locked, &result.BoardId, &result.Topic)
+	err := row.Scan(&result.Id, &result.Locked, &result.BoardId, &result.Topic, &result.BoardUri)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoard threads failed : %w", err)
 	}
@@ -286,6 +289,21 @@ func (bs *BoardService) CreateThread(board_id int, topic, identifier, content st
 	result.Posts = append(result.Posts, post)
 
 	return &result, nil
+}
+
+func (bs *BoardService) CreateReply(thread_id int, identifier, content string) error {
+	var result int
+
+	row := bs.DB.QueryRow(`
+		INSERT INTO posts(thread_id, identifier, content)
+		VALUES ($1, $2, $3) RETURNING id`, thread_id, identifier, content)
+
+	err := row.Scan(&result)
+	if err != nil {
+		return fmt.Errorf("BoardService.CreateReply failed : %w", err)
+	}
+
+	return nil
 }
 
 func (bs *BoardService) CheckBoard(uri string) (int, error) {

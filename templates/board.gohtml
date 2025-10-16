@@ -1,4 +1,4 @@
-{{template "header" .PageData}}
+{{template "header" .}}
 
 <div class="px-6">
     {{template "boardHeader" .PageData}}
@@ -6,80 +6,84 @@
 <div class="px-6">
     {{template "newThread" .PageData}}
 </div>
+
 {{template "threadSection" .PageData}}
 
-{{template "footer" .PageData}}
+{{template "footer" .}}
 
 {{define "boardHeader"}}
-    <h1>/{{.Uri}}/ - {{.Name}}</h1>
-    <div>
-        ({{.Description}})
-    </div>
+    <header>
+        <h1>/{{.Uri}}/ - {{.Name}}</h1>
+        <div>
+            ({{.Description}})
+        </div>
+    </header>
 {{end}}
 
 {{define "newThread"}}
-<h3>[Create a new thread]</h4>
-    <form action="/{{.Uri}}" method="post">
-            <div class="hidden">
-                {{csrfField}}
-            </div>
-            <div>
-                <label for="topic">[topic]</label>
-                <input
-                    name="threadTopic"
-                    id="threadTopic"
-                    type="text"
-                    placeholder="bybmantas"
-                    required
-                    class="rounded"
-                />
-            </div>
-            <div class="py-2">
-            <label for="identifier">[identifier]</label>
-                <input
-                    name="threadIdentifier"
-                    id="threadIdentifier"
-                    type="text"
-                    placeholder="..."
-                    required
-                    class="rounded"
-                />
-            </div>
-            <div class="py-2">
-                <label for="content">[content]</label>
-                <input
-                    name="threadContent"
-                    id="threadContent"
-                    type="text"
-                    placeholder="..."
-                    required
-                    class="rounded"
-                />
-            </div>
-            <div class="py-4">
-                <button type="submit">
-                    [create]
-                </button>
-            </div>
-        </form>
+    <form action="/{{.Uri}}" method="post" class="activeform">
+        <h3>[Create a new thread]</h3>
+        <div class="hidden">
+            {{csrfField}}
+        </div>
+        <table>
+            <tr>
+                <th>[Topic]</th>
+                <td>
+                    <input
+                        name="threadTopic"
+                        id="threadTopic"
+                        type="text"
+                        size="20"
+                        maxlength="10"
+                        value autocomplete="off"
+                        required/>
+                </td>
+            </tr>
+            <tr>
+                <th>[Identifier/Name]</th>
+                <td>
+                    <input
+                        name="threadIdentifier"
+                        id="threadIdentifier"
+                        type="text"
+                        size="20"
+                        maxlength="10"
+                        value autocomplete="off"
+                        required/>
+                </td>
+            </tr>
+            <tr>
+                <th>[Content]</th>
+                <td>
+                    <textarea name="threadContent" id="threadContent" rows="5" cols="35"></textarea> 
+                </td>
+            </tr>
+        </table>
+        <ul style="padding:0; text-align: center; list-style:none;">
+            <li>
+                <input type="submit" value="[Create a new thread]">
+            </li>
+        </ul>
 {{end}}
 
 {{define "threadSection"}}
     {{$boardUri := .Uri }}
     {{range .Threads}}
-        <div>
-            <a href="{{$boardUri}}/{{.Id}}">{{.Topic}}</a> : 
+        <hr>
+        {{$OPpost := (index .Posts 0)}}
+        <div class="thread">
+            <div class="post op">
+                <span class="topic">{{.Topic}}</span>
+                <span class="identifier">{{$OPpost.Identifier}}</span>
+                <time datetime="{{$OPpost.PostTimestamp}}"> {{$OPpost.PostTimestamp}}</time>
+                <span class="postId"> No.{{$OPpost.Id}}</span>
+                <a href="{{$boardUri}}/{{.Id}}">[Reply]</a>
+                <div class="postContent">{{$OPpost.Content}}</div>
+            </div>
         </div>
-        <ol>
-            {{template "postSection" .Posts}}
-        </ol>
+        <div class="postContainer">
+            {{template "posts" .Posts}}
+        </div>
     {{end}}
-{{end}}
-
-{{define "postSection"}}
-    {{range .}}
-            <li>
-                {{.Identifier}} [{{.PostTimestamp}}] {{if .IsOP}} (OP) {{end}} : {{.Content}}
-            </li>
-        {{end}}
 {{end}}

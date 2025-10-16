@@ -8,58 +8,44 @@
   <!-- ... -->
 </head>
 <body>
-  <header>
-    <nav class="menu-bar">
-            <ul>
-                <li>
-                    <div class="active">
-                        <a href="/">[home]</a>
-                    </div>
-                </li>
-                <li>
-                    <div class="active">
-                        <a href="/faq">[faq]</a>
-                    </div>
-                </li>
-                {{if currentUser}}
-                    <li>
-                        <div class="active">
-                            <a href="/admin">[admin panel]</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="active">
-                            <form action="/logout" method="post">
-                                <div class="hidden">
-                                    {{csrfField}}
-                                </div>
-                                <button type="submit">[logout]</button>
-                            </form>
-                        </div>
-                    </li>
-                {{else}}
-                    <li>
-                        <div class="active">
-                            <a href="/login">[login]</a>
-                        </div>
-                    </li>
-                {{end}}
-            </ul>
-        </nav>
-  </header>
+    {{template "navbar" .}}
 {{end}}
 
 {{define "footer"}}
 <!-- ... -->
 <footer>
-  <footer>
     <p>
+      <span>{{.Footer.Sitename}}</span>
+      <br>
       <span>Powered by <a href="https://github.com/iraqnroll/gochan">gochan</a></span>
       <br>
       <span>2025 - ?</span>
     </p>
-  </footer>
 </footer>
 </body>
 </html>
+{{end}}
+
+{{define "navbar"}}
+    <div class="boardlist">
+        <span>
+            {{range .Navbar.BoardList}}
+                [<a href="/{{.Uri}}" title="{{.Name}}">/{{.Uri}}</a>]
+            {{end}}
+        </span>
+        <span class="options">
+            <a href="/">[home]</a>
+            {{if currentUser}}
+                <a href="/admin">[admin panel]</a>
+                <form action="/logout" method="post">
+                    <div class="hidden">
+                        {{csrfField}}
+                    </div>
+                    <button type="submit">[logout]</button>
+                </form>
+            {{else}}
+                <a href="/login">[login]</a>
+            {{end}}
+        </span>
+  </div>
 {{end}}

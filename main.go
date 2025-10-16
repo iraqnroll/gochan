@@ -102,7 +102,7 @@ func main() {
 	usersC.Templates.Boards = views.Must(views.ParseFS(templates.FS, "boards.gohtml", "head_template.gohtml"))
 
 	//Boards
-	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "head_template.gohtml"))
+	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "thread.gohtml", "head_template.gohtml"))
 	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "head_template.gohtml"))
 
 	//5. Setup routes
@@ -122,6 +122,7 @@ func main() {
 		r.Post("/{boardUri}", boardsC.NewThread)
 
 		r.Get("/{boardUri}/{threadId}", boardsC.ThreadForm)
+		r.Post("/{boardUri}/{threadId}", boardsC.NewReply)
 	})
 
 	//Admin panel routes (only accessible to authenticated users)
@@ -169,6 +170,7 @@ func FileServer(r chi.Router, path string, root http.FileSystem) {
 }
 
 func SetupReusablePageData(bs *models.BoardService, cfg *config.Config) views.BasePageData {
+	//TODO: Make this hot-loadable, right now it loads the content once on startup. It should react to changes such as new board addition mid-execution...
 	boards, err := bs.GetBoardList()
 	if err != nil {
 		panic(err)

@@ -1,8 +1,14 @@
-{{template "header" .PageData}}
+{{template "header" .}}
 
-<div>
-    [board list]
-    <table>
+{{template "boardtable" .PageData}}
+{{template "new-board-form"}}
+
+{{template "footer" .}}
+
+{{define "boardtable"}}
+<table class="adminpanel" style="width:auto">
+    <h3>[Board list]</h3>
+    <tbody>
         <tr>
             <th>ID</th>
             <th>Uri</th>
@@ -13,7 +19,7 @@
             <th>Owner</ht>
             <th>Delete board</ht>
         </tr>
-        {{range .PageData}}
+        {{range .}}
             <tr>
                 <td>{{.Id}}</td>
                 <td>{{.Uri}}</td>
@@ -35,53 +41,61 @@
                 </td>
             </tr>
         {{end}}
-    </table>
-</div>
-<div>
-    <h3>[Create a new board]</h4>
-    <form action="/admin/boards/create" method="post">
-            <div class="hidden">
-                {{csrfField}}
-            </div>
-            <div>
-                <label for="uri">[uri]</label>
+    </tbody>
+</table>
+{{end}}
+
+{{define "new-board-form"}}
+<form action="/admin/boards/create" method="post" class="activeform">
+    <h3>[Create a new board]</h3>
+    <div class="hidden">
+        {{csrfField}}
+    </div>
+    <table>
+        <tr>
+            <th>[Uri]</th>
+            <td>
                 <input
                     name="uri"
                     id="uri"
                     type="text"
-                    placeholder="/byb/"
-                    required
-                    class="rounded"
-                />
-            </div>
-            <div class="py-2">
-            <label for="name">[name]</label>
+                    size="20"
+                    maxlength="10"
+                    value autocomplete="off"
+                    required/>
+            </td>
+        </tr>
+        <tr>
+            <th>[Board name]</th>
+            <td>
                 <input
                     name="name"
                     id="name"
                     type="text"
-                    placeholder="Board name"
-                    required
-                    class="rounded"
-                />
-            </div>
-            <div class="py-2">
-                <label for="description">[description]</label>
+                    size="20"
+                    maxlength="30"
+                    value autocomplete="off"
+                    required/>
+            </td>
+        </tr>
+        <tr>
+            <th>[Description]</th>
+            <td>
                 <input
                     name="description"
                     id="description"
                     type="text"
-                    placeholder="This board is about..."
-                    class="rounded"
-                />
-            </div>
-            </div>
-            <div class="py-4">
-                <button type="submit">
-                    [create]
-                </button>
-            </div>
-        </form>
-</div>
-
-{{template "footer" .PageData}}
+                    size="20"
+                    maxlength="30"
+                    value autocomplete="off"
+                    required/>
+            </td>
+        </tr>
+    </table>
+    <ul style="padding:0; text-align: center; list-style:none;">
+        <li>
+            <input type="submit" value="[Create a new board]">
+        </li>
+    </ul>
+</form>
+{{end}}

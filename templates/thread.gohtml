@@ -1,14 +1,70 @@
-{{template "header" .PageData}}
+{{template "header" .}}
 
-<div>
-    {{.PageData.Topic}} :
-    <ol>
-        {{range .PageData.Posts}}
-            <li>
-                {{.Identifier}} [{{.PostTimestamp}}] Nr. {{.Id}} {{if .IsOP}} (OP) {{end}} : {{.Content}}
-            </li>
+{{template "newReply" .PageData}}
+{{template "thread" .PageData}}
+
+{{template "footer" .}}
+
+{{define "thread"}}
+    {{$OPpost := (index .Posts 0)}}
+    <div class="thread">
+        <div class="post op">
+            <span class="topic">{{.Topic}}</span>
+            <span class="identifier">{{$OPpost.Identifier}}</span>
+            <time datetime="{{$OPpost.PostTimestamp}}"> {{$OPpost.PostTimestamp}}</time>
+            <span class="postId"> No.{{$OPpost.Id}}</span>
+            <div class="postContent">{{$OPpost.Content}}</div>
+        </div>
+    </div>
+    <div class="postContainer">
+        {{template "posts" .Posts}}
+    </div>
+{{end}}
+
+{{define "posts"}}
+    {{range .}}
+        {{if not .IsOP}}
+            <div class="post reply">
+                    <span class="identifier">{{.Identifier}}</span>
+                    <time datetime="{{.PostTimestamp}}"> {{.PostTimestamp}}</time>
+                    <span class="postId"> No.{{.Id}}</span>
+                    <div class="body">{{.Content}}</div>
+            </div>
+            <br>
         {{end}}
-    </ol>
-</div>
+    {{end}}
+{{end}}
 
-{{template "footer" .PageData}}
+{{define "newReply"}}
+    <form action="/{{.BoardUri}}/{{.Id}}" method="post" class="activeform">
+        <h3>[Create a new reply]</h3>
+        <div class="hidden">
+            {{csrfField}}
+        </div>
+        <table>
+            <tr>
+                <th>[Identifier/Name]</th>
+                <td>
+                    <input
+                        name="replyIdentifier"
+                        id="replyIdentifier"
+                        type="text"
+                        size="20"
+                        maxlength="10"
+                        value autocomplete="off"
+                        required/>
+                </td>
+            </tr>
+            <tr>
+                <th>[Content]</th>
+                <td>
+                    <textarea name="replyContent" id="replyContent" rows="5" cols="35"></textarea> 
+                </td>
+            </tr>
+        </table>
+        <ul style="padding:0; text-align: center; list-style:none;">
+            <li>
+                <input type="submit" value="[Create a new reply]">
+            </li>
+        </ul>
+{{end}}

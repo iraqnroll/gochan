@@ -83,3 +83,23 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/"+boardUri, http.StatusFound)
 }
+
+func (b Boards) NewReply(w http.ResponseWriter, r *http.Request) {
+
+	thread_id, err := strconv.Atoi(chi.URLParam(r, "threadId"))
+	if err != nil {
+		http.Error(w, "Invalid thread_id entry, only numeric values are allowed.", http.StatusBadRequest)
+		return
+	}
+
+	identifier := r.FormValue("replyIdentifier")
+	content := r.FormValue("replyContent")
+
+	err = b.BoardService.CreateReply(thread_id, identifier, content)
+	if err != nil {
+		http.Error(w, "Error while creating a reply....", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/"+chi.URLParam(r, "boardUri")+"/"+chi.URLParam(r, "threadId"), http.StatusFound)
+}
