@@ -3,6 +3,9 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -67,14 +70,34 @@ func (bs *BoardService) Create(uri, name, description string, ownerId int) (*Boa
 		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
 	}
 
+	//TODO: Refactor this into a separate function
+	//Create a board folder to store static content.
+	path := filepath.Join(".", "static", board.Uri, "banners")
+	err = os.MkdirAll(path, 0755)
+	if err != nil {
+		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
+	}
+
+	path = filepath.Join(".", "static", board.Uri, "src")
+	err = os.Mkdir(path, 0755)
+	if err != nil {
+		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
+	}
+
 	return &board, nil
 }
 
-func (bs *BoardService) Delete(boardId int) error {
+func (bs *BoardService) Delete(boardId int, boardUri string) error {
 	_, err := bs.DB.Exec(`DELETE FROM boards WHERE id = $1`, boardId)
 	if err != nil {
 		fmt.Println("BoardService.Delete failed : %w", err)
 		return err
+	}
+
+	path := filepath.Join(".", "static", boardUri)
+	err = os.RemoveAll(path)
+	if err != nil {
+		return fmt.Errorf("BoardService.Create failed :%w", err)
 	}
 
 	return nil
@@ -207,6 +230,7 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 	return &result, nil
 }
 
+// TODO: Refactor this to return a BoardDto with a single thread entry (this is needed for nested templating.)
 func (bs *BoardService) GetThread(id int) (*ThreadDto, error) {
 	var result ThreadDto
 
@@ -306,7 +330,7 @@ func (bs *BoardService) CreateReply(thread_id int, identifier, content string) e
 	return nil
 }
 
-func (bs *BoardService) CheckBoard(uri string) (int, error) {
+func (bs *BoardService) CheckBoardUri(uri string) (int, error) {
 	var board_id int
 
 	rows := bs.DB.QueryRow(`SELECT id FROM boards WHERE uri = $1`, uri)
@@ -317,4 +341,34 @@ func (bs *BoardService) CheckBoard(uri string) (int, error) {
 	}
 
 	return board_id, nil
+}
+
+func (bs *BoardService) CheckBoardId(id int) (string, error) {
+	var board_uri string
+
+	rows := bs.DB.QueryRow(`SELECT uri FROM boards WHERE id = $1`, id)
+	err := rows.Scan(&board_uri)
+
+	if err != nil {
+		return "", fmt.Errorf("BoardService.CheckBoard failed : %w", err)
+	}
+
+	return board_uri, nil
+}
+
+func (bs *BoardService) GetBoardBannerUri(boardUri string) (string, error) {
+	path := filepath.Join(".", "static", boardUri, "banners")
+
+	banners, err := os.ReadDir(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve board banners %w", err)
+	}
+
+	if len(banners) > 0 {
+		result := banners[rand.Intn(len(banners))]
+
+		return filepath.Join(".", "static", boardUri, "banners", result.Name()), nil
+	}
+
+	return "", nil
 }

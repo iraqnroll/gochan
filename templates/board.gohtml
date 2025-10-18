@@ -1,7 +1,7 @@
 {{template "header" .}}
 
 <div class="px-6">
-    {{template "boardHeader" .PageData}}
+    {{template "boardHeader" .}}
 </div>
 <div class="px-6">
     {{template "newThread" .PageData}}
@@ -13,9 +13,12 @@
 
 {{define "boardHeader"}}
     <header>
-        <h1>/{{.Uri}}/ - {{.Name}}</h1>
+        {{if ne .BannerUrl ""}}
+            <img class="board_image" src="/{{.BannerUrl}}" style="width:300px;height:100px" alt>
+        {{end}}
+        <h1>/{{.PageData.Uri}}/ - {{.PageData.Name}}</h1>
         <div>
-            ({{.Description}})
+            ({{.PageData.Description}})
         </div>
     </header>
 {{end}}
@@ -25,6 +28,9 @@
         <h3>[Create a new thread]</h3>
         <div class="hidden">
             {{csrfField}}
+        </div>
+        <div class="hidden">
+            <input name="boardId" value="{{.Id}}"/>
         </div>
         <table>
             <tr>

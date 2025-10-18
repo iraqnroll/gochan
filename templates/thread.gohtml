@@ -24,7 +24,7 @@
 {{define "posts"}}
     {{range .}}
         {{if not .IsOP}}
-            <div class="post reply">
+            <div class="post reply" id={{.Id}}>
                     <span class="identifier">{{.Identifier}}</span>
                     <time datetime="{{.PostTimestamp}}"> {{.PostTimestamp}}</time>
                     <span class="postId"> No.{{.Id}}</span>

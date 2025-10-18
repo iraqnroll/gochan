@@ -27,9 +27,10 @@ type FooterData struct {
 }
 
 type BasePageData struct {
-	Navbar   NavbarData
-	Footer   FooterData
-	PageData any
+	Navbar    NavbarData
+	Footer    FooterData
+	BannerUrl string
+	PageData  any
 }
 
 func (t Template) Execute(w http.ResponseWriter, r *http.Request, data any) {

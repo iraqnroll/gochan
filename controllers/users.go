@@ -217,7 +217,9 @@ func (u Users) DeleteBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = u.BoardService.Delete(boardId)
+	boardUri := r.FormValue("boardUri")
+
+	err = u.BoardService.Delete(boardId, boardUri)
 	if err != nil {
 		http.Error(w, "Failed to delete board", http.StatusInternalServerError)
 		return

@@ -303,3 +303,8 @@ hr {
     height: 0;
     clear: left;
 }
+
+img.board_image {
+    display: block;
+    margin: 12px auto 0 auto;
+}

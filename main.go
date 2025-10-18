@@ -103,7 +103,7 @@ func main() {
 
 	//Boards
 	boardsC.Board = views.Must(views.ParseFS(templates.FS, "board.gohtml", "thread.gohtml", "head_template.gohtml"))
-	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "head_template.gohtml"))
+	boardsC.Thread = views.Must(views.ParseFS(templates.FS, "thread.gohtml", "board.gohtml", "head_template.gohtml"))
 
 	//5. Setup routes
 
