@@ -1,7 +1,8 @@
 {{template "header" .}}
 
+{{template "boardHeader" .}}
 {{template "newReply" .PageData}}
-{{template "thread" .PageData}}
+{{template "thread" index .PageData.Threads 0}}
 
 {{template "footer" .}}
 
@@ -36,7 +37,8 @@
 {{end}}
 
 {{define "newReply"}}
-    <form action="/{{.BoardUri}}/{{.Id}}" method="post" class="activeform">
+    {{$Thread := (index .Threads 0)}}
+    <form action="/{{.Uri}}/{{$Thread.Id}}" method="post" class="activeform">
         <h3>[Create a new reply]</h3>
         <div class="hidden">
             {{csrfField}}

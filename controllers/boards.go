@@ -12,8 +12,9 @@ import (
 )
 
 type Boards struct {
-	Board    Template
-	Thread   Template
+	Board  Template
+	Thread Template
+
 	PageData views.BasePageData
 
 	BoardService *models.BoardService
@@ -53,7 +54,7 @@ func (b Boards) ThreadForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := b.BoardService.GetThread(threadId)
+	result, err := b.BoardService.GetThread(threadId, boardUri)
 	if err != nil {
 		http.Error(w, "Unable to fetch thread...", http.StatusInternalServerError)
 	}
@@ -72,6 +73,7 @@ func (b Boards) ThreadForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
+	boardUri := chi.URLParam(r, "boardUri")
 	board_id, err := strconv.Atoi(r.FormValue("boardId"))
 	if err != nil {
 		http.Error(w, "Invalid board id...", http.StatusBadRequest)
@@ -79,7 +81,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	board_uri, err := b.BoardService.CheckBoardId(board_id)
+	_, err = b.BoardService.CheckBoard("", &board_id)
 	if err != nil {
 		http.Error(w, "Error while resolving board...", http.StatusNotFound)
 		fmt.Println("NewThread err: %w", err)
@@ -99,7 +101,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/"+board_uri, http.StatusFound)
+	http.Redirect(w, r, "/"+boardUri, http.StatusFound)
 }
 
 func (b Boards) NewReply(w http.ResponseWriter, r *http.Request) {
