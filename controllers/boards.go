@@ -20,6 +20,8 @@ type Boards struct {
 	BoardService *models.BoardService
 }
 
+const MAX_UPLOAD_SIZE = 1024 * 1024 * 10 //10MB
+
 func (b Boards) BoardForm(w http.ResponseWriter, r *http.Request) {
 	boardUri := chi.URLParam(r, "boardUri")
 	board, err := b.BoardService.GetBoard(boardUri)
@@ -73,6 +75,11 @@ func (b Boards) ThreadForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
+	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
+		http.Error(w, "The overall file size of the request is too big. Please keep file uploads up to 10MB", http.StatusBadRequest)
+	}
+
 	boardUri := chi.URLParam(r, "boardUri")
 	board_id, err := strconv.Atoi(r.FormValue("boardId"))
 	if err != nil {
@@ -93,11 +100,21 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 	identifier := r.FormValue("threadIdentifier")
 	content := r.FormValue("threadContent")
 
-	_, err = b.BoardService.CreateThread(board_id, topic, identifier, content)
+	thread, err := b.BoardService.CreateThread(board_id, topic, identifier, content)
 
 	if err != nil {
 		http.Error(w, "Error while creating a new thread...", http.StatusInternalServerError)
 		fmt.Println("NewThread err: %w", err)
+		return
+	}
+
+	//Deal with uploaded files
+	m := r.MultipartForm
+	files := m.File["file-input"]
+
+	err = b.BoardService.HandleFileUploads(files, boardUri, thread.Id, thread.Posts[0].Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

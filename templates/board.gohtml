@@ -24,7 +24,7 @@
 {{end}}
 
 {{define "newThread"}}
-    <form action="/{{.Uri}}" method="post" class="activeform">
+    <form action="/{{.Uri}}" method="post" class="activeform" enctype="multipart/form-data">
         <h3>[Create a new thread]</h3>
         <div class="hidden">
             {{csrfField}}
@@ -63,6 +63,20 @@
                 <th>[Content]</th>
                 <td>
                     <textarea name="threadContent" id="threadContent" rows="5" cols="35"></textarea> 
+                </td>
+            </tr>
+            <tr id="upload" style="display; table-row;">
+                <th>[Upload]</th>
+                <td>
+                    <div class="dropzone-wrap" style="user-select: none; display: block;">
+                        <div class="dropzone" id="dropzone" tabindex="0">
+                            <label class="file-hint">[Choose/drop/paste files]
+                                <input type="file" id="file-input" name="file-input" multiple accept="image/*"/>
+                            </label>
+                            <div class="file-thumbs" id="file-thumbs">
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
         </table>

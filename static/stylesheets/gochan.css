@@ -308,3 +308,70 @@ img.board_image {
     display: block;
     margin: 12px auto 0 auto;
 }
+
+.dropzone-wrap {
+    width: 100%
+}
+
+.dropzone {
+    background: none;
+    color: #800000;
+    cursor: default;
+    margin: auto;
+    padding: 0pt 4pt;
+    text-align: center;
+    min-height: 50pt;
+    max-height: 140pt;
+    transition: 0.2s;
+}
+
+.dropzone .file-hint {
+    color: #80000080;
+    border-color: #80000066;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 10pt;
+    padding: 10pt 0pt;
+    top: 5pt;
+    display: block;
+    transition: 0.2s;
+    border: 2pt dashed rgba(125, 125, 125, 0.4)
+}
+
+.dropzone #file-input {
+    display: none;
+}
+
+.dropzone .tmb-container {
+    padding: 3pt;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.dropzone .remove-btn {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: bottom;
+    bottom: 10pt;
+    position: relative;
+    margin-right: 5pt;
+    font-size: 20pt;
+}
+
+.dropzone .file-tmb {
+    height: 40pt;
+    width: 70px;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+.dropzone .tmb-filename {
+    display: inline-block;
+    vertical-align: bottom;
+    bottom: 12pt;
+    position: relative;
+    margin-left: 5pt;
+}

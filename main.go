@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
+	"gopkg.in/gographics/imagick.v3/imagick"
 
 	"github.com/iraqnroll/gochan/config"
 	"github.com/iraqnroll/gochan/controllers"
@@ -32,17 +33,29 @@ func main() {
 		panic(err)
 	}
 
+	//Imagemagick setup
+	imagick.Initialize()
+	defer imagick.Terminate()
+
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+
 	//2. Setup services
 	userService := models.UserService{
 		DB: db,
 	}
 
-	boardService := models.BoardService{
+	sessionService := models.SessionService{
 		DB: db,
 	}
 
-	sessionService := models.SessionService{
-		DB: db,
+	imagickService := models.IMagickService{
+		MagicWand: mw,
+	}
+
+	boardService := models.BoardService{
+		DB:             db,
+		ImagickService: &imagickService, //TODO: I dont think this will be used anywhere outside board service so there's no need to keep it as a separate service
 	}
 
 	//3. Setup reusable page data.

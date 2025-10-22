@@ -1,11 +1,17 @@
 package models
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"io"
 	"math/rand"
+	"mime/multipart"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -47,7 +53,8 @@ type PostDto struct {
 }
 
 type BoardService struct {
-	DB *sql.DB
+	DB             *sql.DB
+	ImagickService *IMagickService
 }
 
 // -==============================[Admin actions]==============================-
@@ -421,4 +428,67 @@ func (bs *BoardService) GetBoardBannerUri(boardUri string) (string, error) {
 	}
 
 	return "", nil
+}
+
+// Handles writing uploaded files to disk and generating thumbnails.
+// TODO: Refactor this garbage, make imagemagick conversion parameters configurable from config.
+func (bs *BoardService) HandleFileUploads(files []*multipart.FileHeader, board_uri string, thread_id, post_id int) error {
+	fmt.Printf("Received %d files for processing...\n", len(files))
+
+	for i := range files {
+		fmt.Printf("Processing uploaded file : %s\n", files[i].Filename)
+		file, err := files[i].Open()
+
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		src_fn, thumb_fn := createThreadStaticDirectories(board_uri, path.Ext(files[i].Filename), thread_id, post_id, i)
+
+		dst, err := os.Create(src_fn)
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(dst, file); err != nil {
+			return err
+		}
+
+		dst.Close()
+
+		//fmt.Printf("Successfully uploaded src file : %s\n thumbnail path : %s\n, src path : %s\n", files[i].Filename, thumb_fn, src_fn)
+
+		//attempt to generate a thumbnail from uploaded src image.
+		m_cmd := exec.Command("magick", src_fn, "-thumbnail", "200x200", thumb_fn)
+		//fmt.Printf("Command : %s\n", m_cmd.String())
+		var stderr bytes.Buffer
+		m_cmd.Stderr = &stderr
+		err = m_cmd.Run()
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			return err
+		}
+	}
+	return nil
+}
+
+// Creates directories & returns filepaths for thumbnails and source images that were uploaded for a specific post
+// TODO: only allow whitelisted and validated extensions to reach this part of code...
+func createThreadStaticDirectories(board_uri, file_ext string, thread_id, post_id, f_idx int) (string, string) {
+	threadSrcPath := filepath.Join(".", "static", board_uri, "src", strconv.Itoa(thread_id))
+	threadThbPath := filepath.Join(".", "static", board_uri, "thumbs", strconv.Itoa(thread_id))
+
+	err := os.MkdirAll(threadSrcPath, 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(threadThbPath, 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	filename := strconv.Itoa(post_id) + "-" + strconv.Itoa(f_idx) + file_ext
+
+	return filepath.Join(threadSrcPath, filename), filepath.Join(threadThbPath, filename)
 }
