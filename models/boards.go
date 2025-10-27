@@ -56,6 +56,7 @@ type BoardService struct {
 	DB             *sql.DB
 	boardRepo      BoardRepository
 	threadRepo     ThreadRepository
+	postRepo       PostRepository
 	ImagickService *IMagickService
 }
 
@@ -73,6 +74,11 @@ type ThreadRepository interface {
 	CreateNew(board_id int, topic string) (ThreadDto, error)
 	GetById(thread_id int) (ThreadDto, error)
 	GetAllByBoard(board_id int) ([]ThreadDto, error)
+}
+
+type PostRepository interface {
+	GetAllByThread(thread_id int) ([]PostDto, error)
+	CreateNew(thread_id int, identifier, content string, is_op bool) (PostDto, error)
 }
 
 // -==============================[Admin actions]==============================-
@@ -172,7 +178,7 @@ func (bs *BoardService) GetThread(thread_id int, board_uri string) (*BoardDto, e
 
 	result.Threads = append(result.Threads, thread)
 
-	posts, err := bs.GetPostsQuery(result.Threads)
+	posts, err := bs.postRepo.GetAllByThread(thread.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -183,41 +189,23 @@ func (bs *BoardService) GetThread(thread_id int, board_uri string) (*BoardDto, e
 }
 
 func (bs *BoardService) CreateThread(board_id int, topic, identifier, content string) (*ThreadDto, error) {
-	post := PostDto{
-		Identifier: identifier,
-		Content:    content,
-		IsOP:       true,
-	}
-
 	result, err := bs.threadRepo.CreateNew(board_id, topic)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.CreateThread failed while creating a new thread : %w", err)
 	}
 
 	//We successfully created a new thread, attach the OP's post to it before returning the new thread
-	row := bs.DB.QueryRow(`
-		INSERT INTO posts(thread_id, identifier, content, post_timestamp, is_op)
-		VALUES ($1, $2, $3, $4, $5) RETURNING id`, result.Id, post.Identifier, post.Content, post.PostTimestamp, post.IsOP)
-
-	err = row.Scan(&post.Id)
-
+	post, err := bs.postRepo.CreateNew(result.Id, identifier, content, true)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.CreateThread failed while attaching OP post to new thread : %w", err)
 	}
 
 	result.Posts = append(result.Posts, post)
-
 	return &result, nil
 }
 
 func (bs *BoardService) CreateReply(thread_id int, identifier, content string) error {
-	var result int
-
-	row := bs.DB.QueryRow(`
-		INSERT INTO posts(thread_id, identifier, content)
-		VALUES ($1, $2, $3) RETURNING id`, thread_id, identifier, content)
-
-	err := row.Scan(&result)
+	_, err := bs.postRepo.CreateNew(thread_id, identifier, content, false)
 	if err != nil {
 		return fmt.Errorf("BoardService.CreateReply failed : %w", err)
 	}
@@ -232,30 +220,11 @@ func (bs *BoardService) GetPostsQuery(threads []ThreadDto) ([]PostDto, error) {
 	var result []PostDto
 
 	for _, thread := range threads {
-		threadPostRows, err := bs.DB.Query(`SELECT p.id,
-			p.thread_id,
-			p.identifier,
-			p.content,
-			COALESCE(to_char(p.post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp,
-			p.is_op
-		FROM posts AS p
-		INNER JOIN threads AS th ON th.id = p.thread_id
-		WHERE th.id = $1`, thread.Id)
-
+		posts, err := bs.postRepo.GetAllByThread(thread.Id)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostsQuery failed : %w", err)
 		}
-		defer threadPostRows.Close()
-
-		for threadPostRows.Next() {
-			var post PostDto
-			err = threadPostRows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
-			if err != nil {
-				fmt.Println("GetPostsQuery failed : %w", err)
-			}
-
-			result = append(result, post)
-		}
+		result = append(result, posts...)
 	}
 
 	return result, nil
