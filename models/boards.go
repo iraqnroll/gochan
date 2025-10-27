@@ -54,7 +54,8 @@ type PostDto struct {
 
 type BoardService struct {
 	DB             *sql.DB
-	repo           BoardRepository
+	boardRepo      BoardRepository
+	threadRepo     ThreadRepository
 	ImagickService *IMagickService
 }
 
@@ -68,11 +69,17 @@ type BoardRepository interface {
 	Delete(id int) error
 }
 
+type ThreadRepository interface {
+	CreateNew(board_id int, topic string) (ThreadDto, error)
+	GetById(thread_id int) (ThreadDto, error)
+	GetAllByBoard(board_id int) ([]ThreadDto, error)
+}
+
 // -==============================[Admin actions]==============================-
 func (bs *BoardService) Create(uri, name, description string, ownerId int) (*Board, error) {
 	uri = strings.ToLower(uri)
 
-	board, err := bs.repo.CreateNew(uri, name, description, ownerId)
+	board, err := bs.boardRepo.CreateNew(uri, name, description, ownerId)
 
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
@@ -96,7 +103,7 @@ func (bs *BoardService) Create(uri, name, description string, ownerId int) (*Boa
 }
 
 func (bs *BoardService) Delete(boardId int, boardUri string) error {
-	err := bs.repo.Delete(boardId)
+	err := bs.boardRepo.Delete(boardId)
 	if err != nil {
 		fmt.Println("BoardService.Delete failed : %w", err)
 		return err
@@ -112,7 +119,7 @@ func (bs *BoardService) Delete(boardId int, boardUri string) error {
 }
 
 func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
-	boards, err := bs.repo.GetAllForAdmin()
+	boards, err := bs.boardRepo.GetAllForAdmin()
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetAdminBoardList failed : %w", err)
 	}
@@ -122,7 +129,7 @@ func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
 
 // -==============================[Global actions]==============================-
 func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
-	boards, err := bs.repo.GetAll()
+	boards, err := bs.boardRepo.GetAll()
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
 	}
@@ -132,17 +139,15 @@ func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
 
 func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 	//Get upper-board data, then move on to threads/posts.
-	result, err := bs.repo.GetByUri(uri)
+	result, err := bs.boardRepo.GetByUri(uri)
 	if err != nil {
 		return nil, err
 	}
 
-	result.Threads, err = bs.GetThreadsQuery(result.Id, nil)
+	result.Threads, err = bs.threadRepo.GetAllByBoard(result.Id)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("First thread id %d\n", result.Threads[0].Id)
 
 	posts, err := bs.GetPostsQuery(result.Threads)
 	if err != nil {
@@ -155,17 +160,17 @@ func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
 }
 
 func (bs *BoardService) GetThread(thread_id int, board_uri string) (*BoardDto, error) {
-	result, err := bs.repo.GetByUri(board_uri)
+	result, err := bs.boardRepo.GetByUri(board_uri)
 	if err != nil {
 		return nil, err
 	}
 
-	result.Threads, err = bs.GetThreadsQuery(result.Id, &thread_id)
+	thread, err := bs.threadRepo.GetById(thread_id)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("First thread id %d\n", result.Threads[0].Id)
+	result.Threads = append(result.Threads, thread)
 
 	posts, err := bs.GetPostsQuery(result.Threads)
 	if err != nil {
@@ -184,24 +189,13 @@ func (bs *BoardService) CreateThread(board_id int, topic, identifier, content st
 		IsOP:       true,
 	}
 
-	result := ThreadDto{
-		BoardId: board_id,
-		Locked:  false,
-		Topic:   topic,
-	}
-
-	row := bs.DB.QueryRow(`
-		INSERT INTO threads(board_id, topic)
-		VALUES ($1, $2) RETURNING id, to_char(date_created, 'YYYY-MM-DD HH24:MI:SS')`, board_id, topic)
-
-	err := row.Scan(&result.Id, &post.PostTimestamp)
-
+	result, err := bs.threadRepo.CreateNew(board_id, topic)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.CreateThread failed while creating a new thread : %w", err)
 	}
 
 	//We successfully created a new thread, attach the OP's post to it before returning the new thread
-	row = bs.DB.QueryRow(`
+	row := bs.DB.QueryRow(`
 		INSERT INTO posts(thread_id, identifier, content, post_timestamp, is_op)
 		VALUES ($1, $2, $3, $4, $5) RETURNING id`, result.Id, post.Identifier, post.Content, post.PostTimestamp, post.IsOP)
 
@@ -233,59 +227,6 @@ func (bs *BoardService) CreateReply(thread_id int, identifier, content string) e
 
 // -==============================[Utility functions]==============================-
 // We pass thread_id as a pointer for it's ability to get here as nil, if we pass thread_id, we get a single thread, if its nil we fetch threads for the whole board.
-// TODO: Refactor this garbage, optimally we'd fetch all our board posts/threads with a single query....
-func (bs *BoardService) GetThreadsQuery(board_id int, thread_id *int) ([]ThreadDto, error) {
-	var result []ThreadDto
-
-	//Retrieve specific thread for a specific board
-	if thread_id != nil {
-		var thread ThreadDto
-		row := bs.DB.QueryRow(`
-		SELECT id,
-			locked,
-			board_id,
-			topic
-		FROM threads
-		WHERE board_id = $1 AND id = $2`, board_id, *thread_id)
-
-		err := row.Scan(&thread.Id, &thread.Locked, &thread.BoardId, &thread.Topic)
-		if err != nil {
-			return nil, fmt.Errorf("GetThreadsQuery failed : %w", err)
-		}
-
-		result = append(result, thread)
-		return result, nil
-	} else {
-		threads, err := bs.DB.Query(`
-		SELECT id,
-			locked,
-			board_id,
-			topic
-		FROM threads
-		WHERE board_id = $1`, board_id)
-
-		if err != nil {
-			if err == sql.ErrNoRows { //Why the fuck is 0 rows result considered an error ?????
-				return result, nil
-			}
-			return nil, fmt.Errorf("GetThreadsQuery failed : %w", err)
-		}
-		defer threads.Close()
-
-		for threads.Next() {
-			var thread ThreadDto
-			err = threads.Scan(&thread.Id, &thread.Locked, &thread.BoardId, &thread.Topic)
-
-			if err != nil {
-				fmt.Println("BoardService.GetBoard thread loop failed : %w", err)
-			}
-
-			result = append(result, thread)
-		}
-
-		return result, nil
-	}
-}
 
 func (bs *BoardService) GetPostsQuery(threads []ThreadDto) ([]PostDto, error) {
 	var result []PostDto
@@ -333,6 +274,7 @@ func (bs *BoardService) SortPostsIntoThreads(threads []ThreadDto, posts []PostDt
 	}
 }
 
+// TODO: refactor to use board repository and split into two functions.
 func (bs *BoardService) CheckBoard(uri string, board_id *int) (int, error) {
 	var result int
 	var row *sql.Row
