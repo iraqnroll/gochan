@@ -12,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 type Board struct {
@@ -52,196 +51,195 @@ type PostDto struct {
 	IsOP          bool
 }
 
-type BoardService struct {
-	DB             *sql.DB
-	boardRepo      BoardRepository
-	threadRepo     ThreadRepository
-	postRepo       PostRepository
-	ImagickService *IMagickService
-}
+// type BoardService struct {
+// 	boardRepo      BoardRepository
+// 	threadRepo     ThreadRepository
+// 	postRepo       PostRepository
+// 	ImagickService *IMagickService
+// }
 
-type BoardRepository interface {
-	GetAll() ([]BoardDto, error)
-	GetById(id int) (BoardDto, error)
-	GetByUri(uri string) (BoardDto, error)
-	GetAllForAdmin() ([]Board, error)
+// type BoardRepository interface {
+// 	GetAll() ([]BoardDto, error)
+// 	GetById(id int) (BoardDto, error)
+// 	GetByUri(uri string) (BoardDto, error)
+// 	GetAllForAdmin() ([]Board, error)
 
-	CreateNew(uri, name, description string, owner_id int) (Board, error)
-	Delete(id int) error
-}
+// 	CreateNew(uri, name, description string, owner_id int) (Board, error)
+// 	Delete(id int) error
+// }
 
-type ThreadRepository interface {
-	CreateNew(board_id int, topic string) (ThreadDto, error)
-	GetById(thread_id int) (ThreadDto, error)
-	GetAllByBoard(board_id int) ([]ThreadDto, error)
-}
+// type ThreadRepository interface {
+// 	CreateNew(board_id int, topic string) (ThreadDto, error)
+// 	GetById(thread_id int) (ThreadDto, error)
+// 	GetAllByBoard(board_id int) ([]ThreadDto, error)
+// }
 
-type PostRepository interface {
-	GetAllByThread(thread_id int) ([]PostDto, error)
-	CreateNew(thread_id int, identifier, content string, is_op bool) (PostDto, error)
-}
+// type PostRepository interface {
+// 	GetAllByThread(thread_id int) ([]PostDto, error)
+// 	CreateNew(thread_id int, identifier, content string, is_op bool) (PostDto, error)
+// }
 
 // -==============================[Admin actions]==============================-
-func (bs *BoardService) Create(uri, name, description string, ownerId int) (*Board, error) {
-	uri = strings.ToLower(uri)
+// func (bs *BoardService) Create(uri, name, description string, ownerId int) (*Board, error) {
+// 	uri = strings.ToLower(uri)
 
-	board, err := bs.boardRepo.CreateNew(uri, name, description, ownerId)
+// 	board, err := bs.boardRepo.CreateNew(uri, name, description, ownerId)
 
-	if err != nil {
-		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
-	}
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
+// 	}
 
-	//TODO: Refactor this into a separate function
-	//Create a board folder to store static content.
-	path := filepath.Join(".", "static", board.Uri, "banners")
-	err = os.MkdirAll(path, 0755)
-	if err != nil {
-		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
-	}
+// 	//TODO: Refactor this into a separate function
+// 	//Create a board folder to store static content.
+// 	path := filepath.Join(".", "static", board.Uri, "banners")
+// 	err = os.MkdirAll(path, 0755)
+// 	if err != nil {
+// 		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
+// 	}
 
-	path = filepath.Join(".", "static", board.Uri, "src")
-	err = os.Mkdir(path, 0755)
-	if err != nil {
-		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
-	}
+// 	path = filepath.Join(".", "static", board.Uri, "src")
+// 	err = os.Mkdir(path, 0755)
+// 	if err != nil {
+// 		return &board, fmt.Errorf("BoardService.Create failed :%w", err)
+// 	}
 
-	return &board, nil
-}
+// 	return &board, nil
+// }
 
-func (bs *BoardService) Delete(boardId int, boardUri string) error {
-	err := bs.boardRepo.Delete(boardId)
-	if err != nil {
-		fmt.Println("BoardService.Delete failed : %w", err)
-		return err
-	}
+// func (bs *BoardService) Delete(boardId int, boardUri string) error {
+// 	err := bs.boardRepo.Delete(boardId)
+// 	if err != nil {
+// 		fmt.Println("BoardService.Delete failed : %w", err)
+// 		return err
+// 	}
 
-	path := filepath.Join(".", "static", boardUri)
-	err = os.RemoveAll(path)
-	if err != nil {
-		return fmt.Errorf("BoardService.Create failed :%w", err)
-	}
+// 	path := filepath.Join(".", "static", boardUri)
+// 	err = os.RemoveAll(path)
+// 	if err != nil {
+// 		return fmt.Errorf("BoardService.Create failed :%w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
-	boards, err := bs.boardRepo.GetAllForAdmin()
-	if err != nil {
-		return nil, fmt.Errorf("BoardService.GetAdminBoardList failed : %w", err)
-	}
+// func (bs *BoardService) GetAdminBoardList() ([]Board, error) {
+// 	boards, err := bs.boardRepo.GetAllForAdmin()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BoardService.GetAdminBoardList failed : %w", err)
+// 	}
 
-	return boards, nil
-}
+// 	return boards, nil
+// }
 
 // -==============================[Global actions]==============================-
-func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
-	boards, err := bs.boardRepo.GetAll()
-	if err != nil {
-		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
-	}
+// func (bs *BoardService) GetBoardList() ([]BoardDto, error) {
+// 	boards, err := bs.boardRepo.GetAll()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BoardService.GetBoardList failed : %w", err)
+// 	}
 
-	return boards, nil
-}
+// 	return boards, nil
+// }
 
-func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
-	//Get upper-board data, then move on to threads/posts.
-	result, err := bs.boardRepo.GetByUri(uri)
-	if err != nil {
-		return nil, err
-	}
+// func (bs *BoardService) GetBoard(uri string) (*BoardDto, error) {
+// 	//Get upper-board data, then move on to threads/posts.
+// 	result, err := bs.boardRepo.GetByUri(uri)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	result.Threads, err = bs.threadRepo.GetAllByBoard(result.Id)
-	if err != nil {
-		return nil, err
-	}
+// 	result.Threads, err = bs.threadRepo.GetAllByBoard(result.Id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	posts, err := bs.GetPostsQuery(result.Threads)
-	if err != nil {
-		return nil, err
-	}
+// 	posts, err := bs.GetPostsQuery(result.Threads)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	bs.SortPostsIntoThreads(result.Threads, posts)
+// 	bs.SortPostsIntoThreads(result.Threads, posts)
 
-	return &result, nil
-}
+// 	return &result, nil
+// }
 
-func (bs *BoardService) GetThread(thread_id int, board_uri string) (*BoardDto, error) {
-	result, err := bs.boardRepo.GetByUri(board_uri)
-	if err != nil {
-		return nil, err
-	}
+// func (bs *BoardService) GetThread(thread_id int, board_uri string) (*BoardDto, error) {
+// 	result, err := bs.boardRepo.GetByUri(board_uri)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	thread, err := bs.threadRepo.GetById(thread_id)
-	if err != nil {
-		return nil, err
-	}
+// 	thread, err := bs.threadRepo.GetById(thread_id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	result.Threads = append(result.Threads, thread)
+// 	result.Threads = append(result.Threads, thread)
 
-	posts, err := bs.postRepo.GetAllByThread(thread.Id)
-	if err != nil {
-		return nil, err
-	}
+// 	posts, err := bs.postRepo.GetAllByThread(thread.Id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	bs.SortPostsIntoThreads(result.Threads, posts)
+// 	bs.SortPostsIntoThreads(result.Threads, posts)
 
-	return &result, nil
-}
+// 	return &result, nil
+// }
 
-func (bs *BoardService) CreateThread(board_id int, topic, identifier, content string) (*ThreadDto, error) {
-	result, err := bs.threadRepo.CreateNew(board_id, topic)
-	if err != nil {
-		return nil, fmt.Errorf("BoardService.CreateThread failed while creating a new thread : %w", err)
-	}
+// func (bs *BoardService) CreateThread(board_id int, topic, identifier, content string) (*ThreadDto, error) {
+// 	result, err := bs.threadRepo.CreateNew(board_id, topic)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BoardService.CreateThread failed while creating a new thread : %w", err)
+// 	}
 
-	//We successfully created a new thread, attach the OP's post to it before returning the new thread
-	post, err := bs.postRepo.CreateNew(result.Id, identifier, content, true)
-	if err != nil {
-		return nil, fmt.Errorf("BoardService.CreateThread failed while attaching OP post to new thread : %w", err)
-	}
+// 	//We successfully created a new thread, attach the OP's post to it before returning the new thread
+// 	post, err := bs.postRepo.CreateNew(result.Id, identifier, content, true)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("BoardService.CreateThread failed while attaching OP post to new thread : %w", err)
+// 	}
 
-	result.Posts = append(result.Posts, post)
-	return &result, nil
-}
+// 	result.Posts = append(result.Posts, post)
+// 	return &result, nil
+// }
 
-func (bs *BoardService) CreateReply(thread_id int, identifier, content string) error {
-	_, err := bs.postRepo.CreateNew(thread_id, identifier, content, false)
-	if err != nil {
-		return fmt.Errorf("BoardService.CreateReply failed : %w", err)
-	}
+// func (bs *BoardService) CreateReply(thread_id int, identifier, content string) error {
+// 	_, err := bs.postRepo.CreateNew(thread_id, identifier, content, false)
+// 	if err != nil {
+// 		return fmt.Errorf("BoardService.CreateReply failed : %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // -==============================[Utility functions]==============================-
 // We pass thread_id as a pointer for it's ability to get here as nil, if we pass thread_id, we get a single thread, if its nil we fetch threads for the whole board.
 
-func (bs *BoardService) GetPostsQuery(threads []ThreadDto) ([]PostDto, error) {
-	var result []PostDto
+// func (bs *BoardService) GetPostsQuery(threads []ThreadDto) ([]PostDto, error) {
+// 	var result []PostDto
 
-	for _, thread := range threads {
-		posts, err := bs.postRepo.GetAllByThread(thread.Id)
-		if err != nil {
-			return nil, fmt.Errorf("GetPostsQuery failed : %w", err)
-		}
-		result = append(result, posts...)
-	}
+// 	for _, thread := range threads {
+// 		posts, err := bs.postRepo.GetAllByThread(thread.Id)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("GetPostsQuery failed : %w", err)
+// 		}
+// 		result = append(result, posts...)
+// 	}
 
-	return result, nil
-}
+// 	return result, nil
+// }
 
-func (bs *BoardService) SortPostsIntoThreads(threads []ThreadDto, posts []PostDto) {
-	postHashMap := make(map[int][]PostDto)
+// func (bs *BoardService) SortPostsIntoThreads(threads []ThreadDto, posts []PostDto) {
+// 	postHashMap := make(map[int][]PostDto)
 
-	for _, post := range posts {
-		postHashMap[post.ThreadId] = append(postHashMap[post.ThreadId], post)
-	}
+// 	for _, post := range posts {
+// 		postHashMap[post.ThreadId] = append(postHashMap[post.ThreadId], post)
+// 	}
 
-	for i := range threads {
-		threadId := threads[i].Id
-		threads[i].Posts = postHashMap[threadId]
-	}
-}
+// 	for i := range threads {
+// 		threadId := threads[i].Id
+// 		threads[i].Posts = postHashMap[threadId]
+// 	}
+// }
 
 // TODO: refactor to use board repository and split into two functions.
 func (bs *BoardService) CheckBoard(uri string, board_id *int) (int, error) {
