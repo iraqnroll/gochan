@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/services"
 	"github.com/iraqnroll/gochan/views"
 )
 
@@ -17,7 +17,7 @@ type Boards struct {
 
 	PageData views.BasePageData
 
-	BoardService *models.BoardService
+	BoardService *services.BoardService
 }
 
 const MAX_UPLOAD_SIZE = 1024 * 1024 * 10 //10MB

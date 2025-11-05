@@ -17,9 +17,25 @@ type BoardRepository interface {
 	Delete(id int) error
 }
 
+type IThreadService interface {
+	CreateThread(board_id int, topic, identifier, content string) (*models.ThreadDto, error)
+	GetThread(thread_id int) (*models.ThreadDto, error)
+	GetBoardThreads(board_id int) ([]models.ThreadDto, error)
+}
+
+type IFileService interface {
+	CreateBoardStatic(board_uri string) error
+	RemoveBoardStatic(board_uri string) error
+}
+
 type BoardService struct {
 	boardRepo BoardRepository
-	thService *ThreadService
+	thService IThreadService
+	fService  IFileService
+}
+
+func NewBoardService(repo BoardRepository, thService IThreadService, fService IFileService) *BoardService {
+	return &BoardService{boardRepo: repo, thService: thService, fService: fService}
 }
 
 // Fetches board and it's content (threads/posts) for a specified board uri
@@ -64,14 +80,23 @@ func (bs *BoardService) Create(uri, name, description string, ownerId int) (*mod
 		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
 	}
 
+	err = bs.fService.CreateBoardStatic(board.Uri)
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.Create failed : %w", err)
+	}
+
 	return &board, nil
 }
 
 func (bs *BoardService) Delete(boardId int, boardUri string) error {
 	err := bs.boardRepo.Delete(boardId)
 	if err != nil {
-		fmt.Println("BoardService.Delete failed : %w", err)
-		return err
+		return fmt.Errorf("BoardService.Delete failed : %w", err)
+	}
+
+	err = bs.fService.RemoveBoardStatic(boardUri)
+	if err != nil {
+		return fmt.Errorf("BoardService.Delete failed : %w", err)
 	}
 
 	return nil

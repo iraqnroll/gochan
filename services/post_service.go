@@ -12,12 +12,16 @@ type PostRepository interface {
 }
 
 type PostService struct {
-	postRepo PostRepository
+	PostRepo PostRepository
+}
+
+func NewPostService(repo PostRepository) *PostService {
+	return &PostService{PostRepo: repo}
 }
 
 // Creates a post in a specific thread
 func (ps *PostService) CreatePost(thread_id int, identifier, content string, is_op bool) (models.PostDto, error) {
-	post, err := ps.postRepo.CreateNew(thread_id, identifier, content, false)
+	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, false)
 	if err != nil {
 		return post, fmt.Errorf("PostService.CreateReply failed : %w", err)
 	}
@@ -27,7 +31,7 @@ func (ps *PostService) CreatePost(thread_id int, identifier, content string, is_
 
 // Fetches all posts of the specified thread
 func (ps *PostService) GetThreadPosts(thread_id int) ([]models.PostDto, error) {
-	posts, err := ps.postRepo.GetAllByThread(thread_id)
+	posts, err := ps.PostRepo.GetAllByThread(thread_id)
 	if err != nil {
 		return nil, fmt.Errorf("PostService.GetThreadPosts failed : %w", err)
 	}

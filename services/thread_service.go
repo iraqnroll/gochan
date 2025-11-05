@@ -12,9 +12,18 @@ type ThreadRepository interface {
 	GetAllByBoard(board_id int) ([]models.ThreadDto, error)
 }
 
+type IPostService interface {
+	CreatePost(thread_id int, identifier, content string, is_op bool) (models.PostDto, error)
+	GetThreadPosts(thread_id int) ([]models.PostDto, error)
+}
+
 type ThreadService struct {
 	threadRepo  ThreadRepository
-	postService *PostService
+	postService IPostService
+}
+
+func NewThreadService(repo ThreadRepository, postService IPostService) *ThreadService {
+	return &ThreadService{threadRepo: repo, postService: postService}
 }
 
 // Creates a new thread in the specified board with a OP post.
@@ -57,9 +66,7 @@ func (ts *ThreadService) GetThread(thread_id int) (*models.ThreadDto, error) {
 func (ts *ThreadService) GetBoardThreads(board_id int) ([]models.ThreadDto, error) {
 	result, err := ts.threadRepo.GetAllByBoard(board_id)
 	if err != nil {
-		if err != nil {
-			return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
-		}
+		return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
 	}
 
 	for _, thread := range result {
