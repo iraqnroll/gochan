@@ -69,11 +69,12 @@ func (ts *ThreadService) GetBoardThreads(board_id int) ([]models.ThreadDto, erro
 		return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
 	}
 
-	for _, thread := range result {
-		thread.Posts, err = ts.postService.GetThreadPosts(thread.Id)
+	for i, thread := range result {
+		posts, err := ts.postService.GetThreadPosts(thread.Id)
 		if err != nil {
 			return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
 		}
+		result[i].Posts = posts
 	}
 
 	return result, nil

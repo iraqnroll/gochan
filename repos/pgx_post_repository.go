@@ -17,6 +17,16 @@ const (
 		FROM posts AS p
 		INNER JOIN threads AS th ON th.id = p.thread_id
 		WHERE th.id = $1`
+	p_get_most_recent = `SELECT
+		id,
+		thread_id,
+		identifier,
+		content,
+		COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp,
+		is_op
+		FROM posts
+		ORDER BY id DESC
+		LIMIT $1`
 	p_create_new_query = `INSERT INTO posts(thread_id, identifier, content, is_op) VALUES ($1, $2, $3, $4) RETURNING id`
 )
 
@@ -56,9 +66,26 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int) ([]models.PostDto
 		if err != nil {
 			return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error : %w", err)
 		}
-
 		result = append(result, post)
 	}
+	return result, nil
+}
 
+func (r *PostgresPostRepository) GetMostRecent(num_of_posts int) ([]models.PostDto, error) {
+	var result []models.PostDto
+	rows, err := r.db.Query(p_get_most_recent, num_of_posts)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresPostRepository.GetMostRecent error : %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		post := models.PostDto{}
+		err := rows.Scan(&post.Id, &post.ThreadId, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP)
+		if err != nil {
+			return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error : %w", err)
+		}
+		result = append(result, post)
+	}
 	return result, nil
 }

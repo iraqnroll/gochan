@@ -15,11 +15,16 @@ type (
 	Config struct {
 		Global   Global
 		Database PostgresConfig
+		Api      API
 	}
 
 	Global struct {
 		Shortname string
 		Subtitle  string
+	}
+
+	API struct {
+		RecentPostsNum int
 	}
 )
 

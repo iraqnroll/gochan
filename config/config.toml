@@ -9,3 +9,7 @@ user = "admin"
 password = "changethepassword"
 database = "gochan"
 sslmode = "disable"
+
+[api]
+# Controls how many posts the [/api/posts/mostrecent] endpoint returns (default=15)
+recentpostsnum = 5

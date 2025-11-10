@@ -131,7 +131,7 @@ func (r *PostgresBoardRepository) GetAll() ([]models.BoardDto, error) {
 
 	for rows.Next() {
 		var board models.BoardDto
-		err := rows.Scan(&board.Id, &board.Name, &board.Description)
+		err := rows.Scan(&board.Id, &board.Uri, &board.Name, &board.Description)
 		if err != nil {
 			return nil, fmt.Errorf("PostgresBoardRepository.GetAll error : %w", err)
 		}

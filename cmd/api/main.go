@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -16,8 +17,9 @@ import (
 )
 
 type Api struct {
-	DB     *sql.DB
-	Router *chi.Mux
+	DB          *sql.DB
+	Router      *chi.Mux
+	ApiSettings *config.API
 
 	BoardService  *services.BoardService
 	PostService   *services.PostService
@@ -35,6 +37,7 @@ type Api struct {
 // @host       localhost:3000
 // @basePath   /api
 func (a *Api) Run(host string) {
+	fmt.Println("API running on host - ", host)
 	log.Fatal(http.ListenAndServe(host, a.Router))
 }
 
@@ -44,13 +47,14 @@ func (a *Api) Init(cfg *config.Config) {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	//defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
+	a.ApiSettings = &cfg.Api
 	a.DB = db
 	a.Router = chi.NewRouter()
 
@@ -81,22 +85,18 @@ func (a *Api) InitServices() {
 }
 
 func (a *Api) InitRoutes() {
-	postAPI := &post.API{}
-	threadAPI := &thread.API{}
-	boardAPI := &board.API{}
+	postAPI := &post.API{PostService: a.PostService, Settings: a.ApiSettings}
+	threadAPI := &thread.API{ThreadService: a.ThreadService}
+	boardAPI := &board.API{BoardService: a.BoardService}
 	userAPI := &user.API{}
 
 	//Base route
 	a.Router.Route("/api", func(r chi.Router) {
-		r.Get("/posts", postAPI.List)
-		r.Get("/threads", threadAPI.List)
 		r.Get("/boards", boardAPI.List)
 
-		r.Get("/posts/{id}", postAPI.Get)
 		r.Get("/threads/{id}", threadAPI.Get)
-		r.Get("/boards/{id}", boardAPI.Get)
+		r.Get("/boards/{uri}", boardAPI.Get)
 
-		r.Post("/posts", postAPI.Create)
 		r.Post("/threads", threadAPI.Create)
 		r.Post("/login", userAPI.Login)
 
@@ -104,7 +104,6 @@ func (a *Api) InitRoutes() {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/all", userAPI.List)
 			r.Get("/{id}", userAPI.Get)
-
 			r.Post("/create", userAPI.Create)
 			r.Post("/update/{id}", userAPI.Update)
 
@@ -113,6 +112,12 @@ func (a *Api) InitRoutes() {
 				r.Post("/delete/{id}", boardAPI.Delete)
 				r.Post("/update/{id}", boardAPI.Update)
 			})
+		})
+
+		r.Route("/posts", func(r chi.Router) {
+			r.Get("/mostrecent", postAPI.ListMostRecent)
+			r.Post("/", postAPI.Create)
+			r.Post("/{id}", postAPI.Update)
 		})
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
