@@ -2,6 +2,14 @@
 shortname = "Gochan"
 subtitle = "A modern imageboard engine written in Go!"
 
+#Optional server-side rendered frontend for gochan
+[frontend]
+enabled = true
+staticdir = "/static"
+csrfkey = "gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"
+csrfsecure = false
+csrftrustedorigins = ["localhost:3000"]
+
 [database]
 host = "localhost"
 port = "5432"
@@ -10,6 +18,8 @@ password = "changethepassword"
 database = "gochan"
 sslmode = "disable"
 
+#RESTful API for gochan backend
 [api]
-# Controls how many posts the [/api/posts/mostrecent] endpoint returns (default=15)
-recentpostsnum = 5
+enabled = false
+recentpostsnum = 5  # Controls how many posts the [/api/posts/mostrecent] endpoint returns (default=15)
+sessiontokensize = 32

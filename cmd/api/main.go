@@ -21,10 +21,12 @@ type Api struct {
 	Router      *chi.Mux
 	ApiSettings *config.API
 
-	BoardService  *services.BoardService
-	PostService   *services.PostService
-	ThreadService *services.ThreadService
-	FileService   *services.FileService
+	BoardService   *services.BoardService
+	PostService    *services.PostService
+	ThreadService  *services.ThreadService
+	FileService    *services.FileService
+	SessionService *services.SessionService
+	UserService    *services.UserService
 }
 
 // @title          gochan API
@@ -76,9 +78,13 @@ func (a *Api) InitServices() {
 	bRepo := repos.NewPostgresBoardRepository(a.DB)
 	pRepo := repos.NewPostgresPostRepository(a.DB)
 	tRepo := repos.NewPostgresThreadRepository(a.DB)
+	uRepo := repos.NewPostgresUserRepository(a.DB)
+	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
 	a.PostService = services.NewPostService(pRepo)
 	a.FileService = services.NewFileService()
+	a.UserService = services.NewUserService(uRepo)
+	a.SessionService = services.NewSessionService(sRepo, a.ApiSettings.SessionTokenSize)
 
 	a.ThreadService = services.NewThreadService(tRepo, a.PostService)
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)

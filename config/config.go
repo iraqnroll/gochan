@@ -16,6 +16,7 @@ type (
 		Global   Global
 		Database PostgresConfig
 		Api      API
+		Frontend Frontend
 	}
 
 	Global struct {
@@ -23,8 +24,18 @@ type (
 		Subtitle  string
 	}
 
+	Frontend struct {
+		CsrfKey            string
+		CsrfSecure         bool
+		CsrfTrustedOrigins []string
+		StaticDir          string
+		Enabled            bool
+	}
+
 	API struct {
-		RecentPostsNum int
+		Enabled          bool
+		RecentPostsNum   int
+		SessionTokenSize int
 	}
 )
 

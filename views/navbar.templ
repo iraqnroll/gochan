@@ -1,0 +1,37 @@
+package views
+
+import(
+	"fmt"
+	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/context"
+)
+
+templ navbarComponent() {
+	<div class="boardlist">
+		//@navbarBoardlist(boardList)
+		@navbarOptions()
+	</div>
+}
+
+templ navbarBoardlist(boardList []models.BoardDto) {
+	<span>
+		for _, board := range boardList {
+			{{ url := fmt.Sprintf("/%s", board.Uri) }}
+			[ <a href={ url } title={ board.Name }>{ url }</a>]
+		}
+	</span>
+}
+
+templ navbarOptions(){
+	<span class="options">
+		<a href="/">home</a>
+		if context.User(ctx) != nil {
+			<a href="/mod">mod panel</a>
+			<form action="/logout" method="post">
+				<button type="submit">logout</button>
+			</form>
+		} else {
+			<a href="/login">login</a>
+		}
+	</span>
+}

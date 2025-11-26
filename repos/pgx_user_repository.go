@@ -18,6 +18,13 @@ const (
 		COALESCE(to_char(date_updated, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_updated,
 		user_type FROM users`
 	u_get_pw_hash_query = `SELECT id, password_hash FROM users WHERE username = $1`
+	u_get_by_id_query   = `SELECT 
+		username,
+		password_hash,
+		email,
+		COALESCE(to_char(date_created, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_created,
+		COALESCE(to_char(date_updated, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_updated,
+		usertype FROM users WHERE id = $1`
 )
 
 type PostgresUserRepository struct {
@@ -69,6 +76,16 @@ func (r *PostgresUserRepository) GetAll() ([]models.User, error) {
 	}
 
 	return result, nil
+}
+
+func (r *PostgresUserRepository) GetUserById(user_id int) (*models.User, error) {
+	result := models.User{Id: user_id}
+	row := r.db.QueryRow(u_get_by_id_query, user_id)
+	err := row.Scan(&result.Username, &result.Password_hash, &result.Email, &result.Date_created, &result.Date_updated, &result.User_type)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresUserRepository.GetById failed : %w", err)
+	}
+	return &result, nil
 }
 
 func (r *PostgresUserRepository) GetPwHashByUsername(username string) (*models.User, error) {

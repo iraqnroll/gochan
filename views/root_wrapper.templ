@@ -1,0 +1,17 @@
+package views
+
+templ RootWrapper(footer FooterData) {
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <link rel="stylesheet" type="text/css" id="stylesheet" href="static/stylesheets/gochan.css">
+        </head>
+        <body>
+            @navbarComponent()
+            { children... }
+            @footerComponent(footer)
+        </body>
+    </html>
+}

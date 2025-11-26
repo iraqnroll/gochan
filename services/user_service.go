@@ -13,6 +13,7 @@ type UserRepository interface {
 	Delete(user_id int) error
 	GetAll() ([]models.User, error)
 	GetPwHashByUsername(username string) (*models.User, error)
+	GetUserById(user_id int) (*models.User, error)
 }
 
 type UserService struct {
@@ -21,6 +22,14 @@ type UserService struct {
 
 func NewUserService(uRepo UserRepository) *UserService {
 	return &UserService{userRepo: uRepo}
+}
+
+func (us *UserService) GetAll() ([]models.User, error) {
+	result, err := us.userRepo.GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("UserService.GetAll failed : %w", err)
+	}
+	return result, nil
 }
 
 func (us *UserService) CreateNew(username, password, email string, user_type int) (*models.User, error) {
@@ -48,6 +57,14 @@ func (us *UserService) Delete(user_id int) error {
 		return fmt.Errorf("UserService.Delete failed : %w", err)
 	}
 	return nil
+}
+
+func (us *UserService) GetUserById(user_id int) (*models.User, error) {
+	result, err := us.userRepo.GetUserById(user_id)
+	if err != nil {
+		return nil, fmt.Errorf("UserService.GetUserById failed : %w", err)
+	}
+	return result, nil
 }
 
 func (us *UserService) Authenticate(username, password string) (*models.User, error) {
