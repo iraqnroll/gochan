@@ -14,9 +14,9 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/iraqnroll/gochan/cmd/front/handlers"
 	"github.com/iraqnroll/gochan/config"
+	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/repos"
 	"github.com/iraqnroll/gochan/services"
-	"github.com/iraqnroll/gochan/views"
 )
 
 type Frontend struct {
@@ -74,7 +74,6 @@ func (a *Frontend) Init(cfg *config.Config) {
 
 	If I end up with a substantial amount of independant services I might refactor this.
 */
-
 func (a *Frontend) InitServices() {
 	bRepo := repos.NewPostgresBoardRepository(a.DB)
 	pRepo := repos.NewPostgresPostRepository(a.DB)
@@ -91,10 +90,15 @@ func (a *Frontend) InitServices() {
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)
 }
 
+// TODO: Implement caching of viewmodels/global page data
 func (a *Frontend) InitRoutes() {
-	footerData := &views.FooterData{Sitename: a.Settings.Global.Shortname}
-	homeHandler := handlers.Home{}
-	homeHandler.Footer = footerData
+	footerData := models.FooterData{Sitename: a.Settings.Global.Shortname}
+	parentPageData := models.ParentPageData{
+		Footer:    footerData,
+		Shortname: a.Settings.Global.Shortname,
+		Subtitle:  a.Settings.Global.Subtitle}
+
+	homeHandler := handlers.NewHomeHandler(a.BoardService, parentPageData)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {

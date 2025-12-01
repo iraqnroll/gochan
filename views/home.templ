@@ -1,7 +1,43 @@
 package views
 
-templ Home(footer FooterData) {
-    @RootWrapper(footer) {
-        <h1>TEST</h1>
+import (
+    "fmt"
+    "github.com/iraqnroll/gochan/models"
+)
+
+templ Home(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @HomeHeaderComponent(pageData.Shortname, pageData.Subtitle)
+        @HomeBoardListComponent(pageData.ChildViewModel)
+    }
+}
+
+templ HomeHeaderComponent(shortname, subtitle string) {
+    <header>
+        <h1>{ shortname }</h1>
+        <div class="subtitle">{ subtitle }</div>
+    </header>
+}
+
+templ HomeBoardListComponent(data any) {
+    if model, ok := data.(models.HomeViewModel); ok {
+        <div class="banwrap">
+            <div class="ban">
+                <h2>Boards</h2>
+                <div>
+                    <ul>
+                        for _, board := range model.Boards {
+                            {{ url := fmt.Sprintf("/%s", board.Uri) }}
+                            {{ name := fmt.Sprintf("/%s - %s", board.Uri, board.Name)}}
+                            <li>
+                                <a href={ url }>{ name }</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    } else {
+        <h2>Error while type asserting page viewmodel type.</h2>
     }
 }
