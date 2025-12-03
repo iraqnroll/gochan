@@ -1,6 +1,7 @@
 [global]
 shortname = "Gochan"
 subtitle = "A modern imageboard engine written in Go!"
+recentpostsnum = 10 #Number of most recent posts (for homepage)
 
 #Optional server-side rendered frontend for gochan
 [frontend]

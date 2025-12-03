@@ -98,7 +98,7 @@ func (a *Frontend) InitRoutes() {
 		Shortname: a.Settings.Global.Shortname,
 		Subtitle:  a.Settings.Global.Subtitle}
 
-	homeHandler := handlers.NewHomeHandler(a.BoardService, parentPageData)
+	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {

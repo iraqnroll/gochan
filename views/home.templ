@@ -9,6 +9,7 @@ templ Home(pageData models.ParentPageData) {
     @RootWrapper(pageData.Footer) {
         @HomeHeaderComponent(pageData.Shortname, pageData.Subtitle)
         @HomeBoardListComponent(pageData.ChildViewModel)
+        @HomeRecentPostsComponent(pageData.ChildViewModel)
     }
 }
 
@@ -17,6 +18,39 @@ templ HomeHeaderComponent(shortname, subtitle string) {
         <h1>{ shortname }</h1>
         <div class="subtitle">{ subtitle }</div>
     </header>
+}
+
+//TODO: add media preview next to the recent posts
+templ HomeRecentPostsComponent(data any) {
+    if model, ok := data.(models.HomeViewModel); ok {
+        <div class="banwrap">
+            <div class="ban" >
+                <h2>Recent posts</h2>
+                <div id="recent-posts">
+                    <ul>
+                        for _, post := range model.RecentPosts {
+                            {{ url := fmt.Sprintf("/%s/%d", post.Board_uri, post.Thread_id) }}
+                            {{ post_no := fmt.Sprintf("No.%d : ", post.Post_id)}}
+                            <li>
+                                <small>
+                                    <strong>{ post.Board_name }</strong>
+                                    <u>
+                                        <small>{ post_no }</small>
+                                    </u>
+                                </small>
+                                <a href={ url }>
+                                    <em>{ post.Post_content }</em>
+                                    <em>{ post.Post_timestamp }</em>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    } else {
+        <h2>Error while type asserting page viewmodel type.</h2>
+    }
 }
 
 templ HomeBoardListComponent(data any) {

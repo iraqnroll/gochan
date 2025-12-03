@@ -20,8 +20,9 @@ type (
 	}
 
 	Global struct {
-		Shortname string
-		Subtitle  string
+		Shortname      string
+		Subtitle       string
+		RecentPostsNum int
 	}
 
 	Frontend struct {

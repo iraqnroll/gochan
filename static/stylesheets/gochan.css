@@ -28,6 +28,10 @@ ul {
     padding-inline-start: 40px;
 }
 
+#recent-posts ul {
+    list-style-type: none;
+}
+
 nav.menu-bar ul {
 	list-style-type: none;
     margin: 0;
