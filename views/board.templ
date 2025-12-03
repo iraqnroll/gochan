@@ -1,0 +1,128 @@
+package views
+
+import (
+    "fmt"
+    "github.com/iraqnroll/gochan/models"
+)
+
+templ Board(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @BoardHeaderComponent(pageData.ChildViewModel)
+        @BoardNewThreadComponent(pageData.ChildViewModel)
+        @BoardThreadSectionComponent(pageData.ChildViewModel)
+    }
+}
+
+templ BoardHeaderComponent(data any) {
+    if model, ok := data.(models.BoardViewModel); ok {
+        <header>
+            if model.BannerUrl != "" {
+                {{ banner_url := fmt.Sprintf("/%s", model.BannerUrl) }}
+                <img class="board_image" src={banner_url} style="width:300px;height:100px" alt>
+            }
+            {{ board_title := fmt.Sprintf("/%s - %s", model.Uri, model.Name)}}
+            <h1>{ board_title }</h1>
+            <div>{ model.Description }</div>
+        </header>
+    }
+}
+
+templ BoardNewThreadComponent(data any) {
+    if model, ok := data.(models.BoardViewModel); ok {
+        <form id="newThread" method="post" class="activeform" enctype="multipart/form-data">
+            <h3>Create a new thread:</h3>
+            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
+            <input class="hidden" type="text" id="BoardId" name="BoardId" value={ model.Id }/>
+            <table>
+                <tr>
+                    <th>Topic :</th>
+                    <td>
+                        <input
+                            name="Topic"
+                            id="Topic"
+                            type="text"
+                            size="20"
+                            maxlength="50"
+                            value autocomplete="off"
+                            required/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Name / Email :</th>
+                    <td>
+                        <input
+                            name="Posts.0.Identifier"
+                            id="Posts.0.Identifier"
+                            type="text"
+                            size="20"
+                            maxlength="30"
+                            value autocomplete="off"
+                            required/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Content :</th>
+                    <td>
+                        <textarea name="Posts.0.Content" id="Posts.0.Content" rows="5" cols="35"></textarea> 
+                    </td>
+                </tr>
+                <tr id="upload" style="display; table-row;">
+                    <th>Attach files :</th>
+                    <td>
+                        <div class="dropzone-wrap" style="user-select: none; display: block;">
+                            <div class="dropzone" id="dropzone" tabindex="0">
+                                <label class="file-hint">Choose/drop/paste files
+                                    <input type="file" id="file-input" name="file-input" multiple accept="image/*"/>
+                                </label>
+                                <div class="file-thumbs" id="file-thumbs">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <ul style="padding:0; text-align: center; list-style:none;">
+                <li>
+                    <input type="submit" value="Start a new thread">
+                </li>
+            </ul>
+        </form>
+    }
+}
+
+templ BoardThreadSectionComponent(data any) {
+    if model, ok := data.(models.BoardViewModel); ok {
+        <hr>
+        for _, thread := range model.Threads[:model.ThreadsPerPage]{
+            <div class="thread" thread-id={ thread.Id } board-uri={ thread.BoardUri }>
+                {{ opPost := thread.Posts[0] }}
+                {{ postNo := fmt.Sprintf("No.%d", opPost.Id)}}
+                {{ threadUrl := fmt.Sprintf("/%s/%d#%d", model.Uri, thread.Id, opPost.Id)}}
+                <div class="post op" id= { opPost.Id }>
+                    <span class="topic">{ thread.Topic }</span>
+                    <span class="identifier">{ opPost.Identifier }</span>
+                    <time datetime={ opPost.PostTimestamp }> { opPost.PostTimestamp } </time>
+                    <span class="postId">{ postNo }</span>
+                    <a href={ threadUrl }>Reply</a>
+                    <div class="postContent">{ opPost.Content }</div>
+                </div>
+                <div class="postContainer">
+                    @BoardThreadPostSectionComponent(thread.Posts[1:])
+                </div>
+            </div>
+            <hr>
+        }
+    }
+}
+
+templ BoardThreadPostSectionComponent(posts []models.PostDto) {
+    for _, post := range posts {
+        {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
+        <div class="post reply" id={ post.Id }>
+            <span class="identifier">{ post.Identifier }</span>
+            <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
+            <span class="postId">{ postNo }</span>
+            <div class="body">{ post.Content }</div>
+        </div>
+    }
+}

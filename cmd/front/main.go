@@ -99,10 +99,12 @@ func (a *Frontend) InitRoutes() {
 		Subtitle:  a.Settings.Global.Subtitle}
 
 	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
+	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.FileService, parentPageData, 10)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
 		r.Get("/", homeHandler.Home)
+		r.Get("/{board_uri}", boardHandler.Board)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Page not found.", http.StatusNotFound)
