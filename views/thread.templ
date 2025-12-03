@@ -1,0 +1,108 @@
+package views
+
+import (
+    "fmt"
+    "github.com/iraqnroll/gochan/models"
+)
+
+templ Thread(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @ThreadHeaderComponent(pageData.ChildViewModel)
+        @ThreadNewReplyComponent(pageData.ChildViewModel)
+        @ThreadSectionComponent(pageData.ChildViewModel)
+    }
+}
+
+templ ThreadHeaderComponent(data any) {
+    if model, ok := data.(models.ThreadViewModel); ok {
+        <header>
+            if model.BannerUrl != "" {
+                {{ banner_url := fmt.Sprintf("/%s", model.BannerUrl) }}
+                <img class="board_image" src={ banner_url } style="width:300px;height:100px" alt>
+            }
+        </header>
+    }
+}
+
+//TODO: Component is virtually the same as new thread component, combine them into one..
+templ ThreadNewReplyComponent(data any) {
+    if model, ok := data.(models.ThreadViewModel); ok {
+        <form id="newReply" method="post" class="activeform" enctype="multipart/form-data">
+            <h3>Create a new reply:</h3>
+            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
+            <input class="hidden" type="text" id="ThreadId" name="ThreadId" value={ model.Id }/>
+            <table>
+                <tr>
+                    <th>Name / Email :</th>
+                    <td>
+                        <input
+                            name="Identifier"
+                            id="Identifier"
+                            type="text"
+                            size="20"
+                            maxlength="30"
+                            value autocomplete="off"
+                            required/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Content :</th>
+                    <td>
+                        <textarea name="Content" id="Content" rows="5" cols="35"></textarea> 
+                    </td>
+                </tr>
+                <tr id="upload" style="display; table-row;">
+                    <th>Attach files :</th>
+                    <td>
+                        <div class="dropzone-wrap" style="user-select: none; display: block;">
+                            <div class="dropzone" id="dropzone" tabindex="0">
+                                <label class="file-hint">Choose/drop/paste files
+                                    <input type="file" id="file-input" name="file-input" multiple accept="image/*"/>
+                                </label>
+                                <div class="file-thumbs" id="file-thumbs">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <ul style="padding:0; text-align: center; list-style:none;">
+                <li>
+                    <input type="submit" value="Post a new reply">
+                </li>
+            </ul>
+        </form>
+    }
+}
+
+templ ThreadSectionComponent(data any) {
+    if model, ok := data.(models.ThreadViewModel); ok {
+        <hr>
+        <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
+            {{ postNo := fmt.Sprintf("No.%d", model.OPPost.Id)}}
+            <div class="post op" id={ model.OPPost.Id }>
+                <span class="topic">{ model.Topic }</span>
+                <span class="identifier">{ model.OPPost.Identifier }</span>
+                <time datetime={ model.OPPost.PostTimestamp }> { model.OPPost.PostTimestamp } </time>
+                <span class="postId">{ postNo }</span>
+                <div class="postContent">{ model.OPPost.Content }</div>
+            </div>
+            <div class="postContainer">
+                @ThreadReplySectionComponent(model.Replies)
+            </div>
+        </div>
+        <hr>
+    }
+}
+
+templ ThreadReplySectionComponent(posts []models.PostDto) {
+    for _, post := range posts {
+        {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
+        <div class="post reply" id={ post.Id }>
+            <span class="identifier">{ post.Identifier }</span>
+            <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
+            <span class="postId">{ postNo }</span>
+            <div class="body">{ post.Content }</div>
+        </div>
+    }
+}
