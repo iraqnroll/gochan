@@ -4,5 +4,6 @@ CREATE TABLE posts (
     identifier TEXT,
     content TEXT,
     post_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_op BOOLEAN NOT NULL DEFAULT(FALSE)
+    is_op BOOLEAN NOT NULL DEFAULT(FALSE),
+    has_media TEXT
 )

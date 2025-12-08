@@ -13,7 +13,7 @@ type ThreadRepository interface {
 }
 
 type IPostService interface {
-	CreatePost(thread_id int, identifier, content string, is_op bool) (models.PostDto, error)
+	CreatePost(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
 	GetThreadPosts(thread_id int) ([]models.PostDto, error)
 }
 
@@ -27,14 +27,14 @@ func NewThreadService(repo ThreadRepository, postService IPostService) *ThreadSe
 }
 
 // Creates a new thread in the specified board with a OP post.
-func (ts *ThreadService) CreateThread(board_id int, topic, identifier, content string) (*models.ThreadDto, error) {
+func (ts *ThreadService) CreateThread(board_id int, topic, identifier, content, has_media string) (*models.ThreadDto, error) {
 	result, err := ts.threadRepo.CreateNew(board_id, topic)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.CreateThread failed while creating a new thread : %w", err)
 	}
 
 	//New thread created, create and attach the OP post to it.
-	post, err := ts.postService.CreatePost(result.Id, identifier, content, true)
+	post, err := ts.postService.CreatePost(result.Id, identifier, content, has_media, true)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.CreateThread failed while creating a new thread : %w", err)
 	}

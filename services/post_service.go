@@ -8,7 +8,7 @@ import (
 
 type PostRepository interface {
 	GetAllByThread(thread_id int) ([]models.PostDto, error)
-	CreateNew(thread_id int, identifier, content string, is_op bool) (models.PostDto, error)
+	CreateNew(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
 }
 
@@ -21,8 +21,8 @@ func NewPostService(repo PostRepository) *PostService {
 }
 
 // Creates a post in a specific thread
-func (ps *PostService) CreatePost(thread_id int, identifier, content string, is_op bool) (models.PostDto, error) {
-	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, false)
+func (ps *PostService) CreatePost(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error) {
+	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, has_media, is_op)
 	if err != nil {
 		return post, fmt.Errorf("PostService.CreateReply failed : %w", err)
 	}

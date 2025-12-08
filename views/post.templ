@@ -126,3 +126,34 @@ templ PostSectionComponent(posts []models.PostDto) {
         </div>
     }
 }
+
+templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string, thread_id int) {
+    {{ postNo := fmt.Sprintf("No.%d", op_post.Id)}}
+    if op_post.HasMedia != "" {
+        {{ files := SplitStringBy(op_post.HasMedia, ';') }}
+        <div class="files">
+            for _, file := range(files) {
+                {{ srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, thread_id, file)}}
+                {{ thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, thread_id, file)}}
+                <div class="file">
+                    <p style="font-size:10pt" class="fileinfo">
+                        <a href= { srcUrl }>{ file }</a>
+                    </p>
+                    <a href={ srcUrl } target="_blank">
+                        <img class="post-image" src={ thmbUrl } style="width:160px; height:160px" loading="lazy">
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    <div class="post op" id= { op_post.Id }>
+        <span class="topic">{ topic }</span>
+        <span class="identifier">{ op_post.Identifier }</span>
+        <time datetime={ op_post.PostTimestamp }> { op_post.PostTimestamp } </time>
+        <span class="postId">{ postNo }</span>
+        if reply_uri != "" {
+            <a href={ reply_uri }>Reply</a>
+        }
+        <div class="postContent">{ op_post.Content }</div>
+    </div>
+}

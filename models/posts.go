@@ -7,6 +7,7 @@ type PostDto struct {
 	Content       string `json:"content"`
 	PostTimestamp string `json:"post_timestamp"`
 	IsOP          bool   `json:"is_op"`
+	HasMedia      string
 }
 
 type RecentPostsDto struct {
@@ -18,4 +19,5 @@ type RecentPostsDto struct {
 	Post_ident     string `json:"post_ident"`
 	Post_content   string `json:"post_content"`
 	Post_timestamp string `json:"post_timestamp"`
+	HasMedia       string
 }

@@ -28,14 +28,7 @@ templ ThreadSectionComponent(data any) {
     if model, ok := data.(models.ThreadViewModel); ok {
         <hr>
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
-            {{ postNo := fmt.Sprintf("No.%d", model.OPPost.Id)}}
-            <div class="post op" id={ model.OPPost.Id }>
-                <span class="topic">{ model.Topic }</span>
-                <span class="identifier">{ model.OPPost.Identifier }</span>
-                <time datetime={ model.OPPost.PostTimestamp }> { model.OPPost.PostTimestamp } </time>
-                <span class="postId">{ postNo }</span>
-                <div class="postContent">{ model.OPPost.Content }</div>
-            </div>
+            @OPPostComponent(model.OPPost, model.Topic, "", model.BoardUri, model.Id)
             <div class="postContainer">
                 @PostSectionComponent(model.Replies)
             </div>
