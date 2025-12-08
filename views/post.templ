@@ -1,0 +1,128 @@
+package views
+
+import (
+    "fmt"
+    "github.com/iraqnroll/gochan/models"
+)
+
+templ NewThreadOrReplyComponent(data any) {
+    <form id="newThread" method="post" class="activeform" enctype="multipart/form-data">
+            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
+            switch model := data.(type) {
+                case models.BoardViewModel:
+                    <h3>Create a new thread:</h3>
+                    <input class="hidden" type="text" id="BoardId" name="BoardId" value={ model.Id }/>
+                case models.ThreadViewModel:
+                    <h3>Create a new reply:</h3>
+                    <input class="hidden" type="text" id="ThreadId" name="ThreadId" value={ model.Id }/>
+            }
+            if _, ok := data.(models.BoardViewModel); ok {
+                <table>
+                    <tr>
+                        <th>Topic :</th>
+                        <td>
+                            <input
+                                name="Topic"
+                                id="Topic"
+                                type="text"
+                                size="20"
+                                maxlength="50"
+                                value autocomplete="off"
+                                required/>
+                        </td>
+                    </tr>
+                    <tr>
+                    <th>Name / Email :</th>
+                    <td>
+                        <input
+                            name="Posts.0.Identifier"
+                            id="Posts.0.Identifier"
+                            type="text"
+                            size="20"
+                            maxlength="30"
+                            value autocomplete="off"
+                            required/>
+                    </td>
+                    </tr>
+                    <tr>
+                        <th>Content :</th>
+                        <td>
+                            <textarea name="Posts.0.Content" id="Posts.0.Content" rows="5" cols="35"></textarea> 
+                        </td>
+                    </tr>
+                    <tr id="upload" style="display; table-row;">
+                        <th>Attach files :</th>
+                        <td>
+                            <div class="dropzone-wrap" style="user-select: none; display: block;">
+                                <div class="dropzone" id="dropzone" tabindex="0">
+                                    <label class="file-hint">Choose/drop/paste files
+                                        <input type="file" id="file-input" name="file-input" multiple accept="image/*"/>
+                                    </label>
+                                    <div class="file-thumbs" id="file-thumbs">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <ul style="padding:0; text-align: center; list-style:none;">
+                    <li>
+                        <input type="submit" value="Start a new thread">
+                    </li>
+                </ul>
+            } else {
+                <table>
+                    <tr>
+                        <th>Name / Email :</th>
+                        <td>
+                            <input
+                                name="Identifier"
+                                id="Identifier"
+                                type="text"
+                                size="20"
+                                maxlength="30"
+                                value autocomplete="off"
+                                required/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Content :</th>
+                        <td>
+                            <textarea name="Content" id="Content" rows="5" cols="35"></textarea> 
+                        </td>
+                    </tr>
+                    <tr id="upload" style="display; table-row;">
+                        <th>Attach files :</th>
+                        <td>
+                            <div class="dropzone-wrap" style="user-select: none; display: block;">
+                                <div class="dropzone" id="dropzone" tabindex="0">
+                                    <label class="file-hint">Choose/drop/paste files
+                                        <input type="file" id="file-input" name="file-input" multiple accept="image/*"/>
+                                    </label>
+                                    <div class="file-thumbs" id="file-thumbs">
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <ul style="padding:0; text-align: center; list-style:none;">
+                    <li>
+                        <input type="submit" value="Post a new reply">
+                    </li>
+                </ul>
+            }
+    </form>
+}
+
+templ PostSectionComponent(posts []models.PostDto) {
+    for _, post := range posts {
+        {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
+        <div class="post reply" id={ post.Id }>
+            <span class="identifier">{ post.Identifier }</span>
+            <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
+            <span class="postId">{ postNo }</span>
+            <div class="body">{ post.Content }</div>
+        </div>
+    }
+}
