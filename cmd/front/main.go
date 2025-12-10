@@ -99,13 +99,15 @@ func (a *Frontend) InitRoutes() {
 		Subtitle:  a.Settings.Global.Subtitle}
 
 	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
-	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.FileService, parentPageData, 10)
+	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10)
 	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
 		r.Get("/", homeHandler.Home)
 		r.Get("/{board_uri}", boardHandler.Board)
+		r.Post("/{board_uri}", boardHandler.NewThread)
+
 		r.Get("/{board_uri}/{thread_id}", threadHandler.Thread)
 		r.Post("/{board_uri}/{thread_id}", threadHandler.Reply)
 

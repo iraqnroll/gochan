@@ -94,3 +94,7 @@ func (ts *ThreadService) SortPostsIntoThreads(threads []models.ThreadDto, posts 
 		threads[i].Posts = postHashMap[threadId]
 	}
 }
+
+func (ts *ThreadService) UpdateAttachedMedia(post_id int, attached_media string) error {
+	return ts.postService.UpdateAttachedMedia(post_id, attached_media)
+}

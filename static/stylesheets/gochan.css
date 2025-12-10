@@ -250,6 +250,7 @@ input[type="text"], input[type="password"], textarea {
 div.post.op {
     margin-right: 20pt;
     margin-bottom: 5pt;
+    clear:left;
 }
 
 div.post {

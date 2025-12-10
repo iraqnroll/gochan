@@ -12,6 +12,7 @@ templ NewThreadOrReplyComponent(data any) {
                 case models.BoardViewModel:
                     <h3>Create a new thread:</h3>
                     <input class="hidden" type="text" id="BoardId" name="BoardId" value={ model.Id }/>
+                    <input class="hidden" type="text" id="BoardUri" name="BoardUri" value={ model.Uri }/>
                 case models.ThreadViewModel:
                     <h3>Create a new reply:</h3>
                     <input class="hidden" type="text" id="ThreadId" name="ThreadId" value={ model.Id }/>
@@ -151,7 +152,7 @@ templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string
     {{ postNo := fmt.Sprintf("No.%d", op_post.Id)}}
     if op_post.HasMedia != "" {
         {{ files := SplitStringBy(op_post.HasMedia, ';') }}
-        <div class="files">
+        <div class="file">
             for _, file := range(files) {
                 {{ srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, thread_id, file)}}
                 {{ thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, thread_id, file)}}
@@ -160,7 +161,7 @@ templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string
                         <a href= { srcUrl }>{ file }</a>
                     </p>
                     <a href={ srcUrl } target="_blank">
-                        <img class="post-image" src={ thmbUrl } style="width:160px; height:160px" loading="lazy">
+                        <img class="post-image" src={ thmbUrl } style="width:200px; height:200px" loading="lazy">
                     </a>
                 </div>
             }
@@ -176,4 +177,5 @@ templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string
         }
         <div class="postContent">{ op_post.Content }</div>
     </div>
+    <br>
 }

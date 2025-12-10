@@ -9,7 +9,7 @@ import (
 
 const (
 	t_get_by_id_query    = `SELECT locked, board_id, topic FROM threads WHERE id = $1`
-	t_get_by_board_query = `SELECT id, locked, topic FROM threads WHERE board_id = $1`
+	t_get_by_board_query = `SELECT id, locked, topic FROM threads WHERE board_id = $1 ORDER BY id DESC`
 	t_create_new_query   = `INSERT INTO threads(board_id, topic) VALUES ($1, $2) RETURNING id`
 )
 

@@ -87,7 +87,7 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Saved attached media for post Id %d : %s", new_post.Id, attached_media)
-	err = t.PostService.UpdateAttachedMedia(new_post.Id, attached_media)
+	err = t.ThreadService.UpdateAttachedMedia(new_post.Id, attached_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
