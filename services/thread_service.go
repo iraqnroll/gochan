@@ -15,6 +15,7 @@ type ThreadRepository interface {
 type IPostService interface {
 	CreatePost(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
 	GetThreadPosts(thread_id int) ([]models.PostDto, error)
+	UpdateAttachedMedia(post_id int, attached_media string) error
 }
 
 type ThreadService struct {

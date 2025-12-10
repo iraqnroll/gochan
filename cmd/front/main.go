@@ -100,13 +100,14 @@ func (a *Frontend) InitRoutes() {
 
 	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
 	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.FileService, parentPageData, 10)
-	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.FileService, parentPageData, 50)
+	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
 		r.Get("/", homeHandler.Home)
 		r.Get("/{board_uri}", boardHandler.Board)
 		r.Get("/{board_uri}/{thread_id}", threadHandler.Thread)
+		r.Post("/{board_uri}/{thread_id}", threadHandler.Reply)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Page not found.", http.StatusNotFound)
@@ -142,6 +143,7 @@ func (a *Frontend) InitMiddlewares(csrfKey string, csrfSecure bool, trusted_orig
 		[]byte(csrfKey),
 		csrf.Secure(csrfSecure),
 		csrf.TrustedOrigins(trusted_origins),
+		csrf.FieldName("_csrf"),
 	)
 
 	a.Router.Use(csrfMw)

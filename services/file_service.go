@@ -71,23 +71,25 @@ func (fs *FileService) GetBoardBannerUri(board_uri string) (string, error) {
 
 // Handles writing uploaded files to disk and generating thumbnails.
 // TODO: Refactor this garbage, make imagemagick conversion parameters configurable from config.
-func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_uri string, thread_id, post_id int) error {
+func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_uri string, thread_id, post_id int) (string, error) {
+	var result string
 	for i := range files {
 		//fmt.Printf("Processing uploaded file : %s\n", files[i].Filename)
 		file, err := files[i].Open()
 		if err != nil {
-			return err
+			return "", err
 		}
 		defer file.Close()
 
-		src_fn, thumb_fn := createThreadStaticDirectories(board_uri, path.Ext(files[i].Filename), thread_id, post_id, i)
+		f_ext := path.Ext(files[i].Filename)
+		src_fn, thumb_fn := createThreadStaticDirectories(board_uri, f_ext, thread_id, post_id, i)
 
 		dst, err := os.Create(src_fn)
 		if err != nil {
-			return err
+			return "", err
 		}
 		if _, err := io.Copy(dst, file); err != nil {
-			return err
+			return "", err
 		}
 		dst.Close()
 
@@ -99,10 +101,12 @@ func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_ur
 		err = m_cmd.Run()
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			return err
+			return "", err
 		}
+
+		result = result + fmt.Sprintf("%d-%d%s;", post_id, i, f_ext)
 	}
-	return nil
+	return result, nil
 }
 
 // Creates directories & returns filepaths for thumbnails and source images that were uploaded for a specific post

@@ -293,6 +293,13 @@ div.post.reply {
     max-width: 90% !important;
 }
 
+div.post.reply div.body {
+    margin-left: 1.8em;
+    margin-top: 0.8em;
+    padding-right: 1.8em;
+    padding-bottom: 0.3em;
+}
+
 div.post div.body {
     margin-left: 1.8em;
     margin-top: 0.8em;
@@ -311,6 +318,11 @@ hr {
 img.board_image {
     display: block;
     margin: 12px auto 0 auto;
+}
+
+img {
+    overflow-clip-margin: content-box;
+    overflow: clip;
 }
 
 .dropzone-wrap {
@@ -378,4 +390,21 @@ img.board_image {
     bottom: 12pt;
     position: relative;
     margin-left: 5pt;
+}
+
+.intro {
+    padding: 0;
+    padding-bottom: 0.2em;
+    margin: 2px;
+}
+
+.file {
+    margin-right: 2px;
+    min-width: 200px;
+    padding-bottom: 10px;
+    float: left;
+}
+
+.fileinfo a {
+    color: #0000ff;
 }

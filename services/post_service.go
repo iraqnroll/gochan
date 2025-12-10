@@ -10,6 +10,7 @@ type PostRepository interface {
 	GetAllByThread(thread_id int) ([]models.PostDto, error)
 	CreateNew(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
+	UpdateAttachedMedia(post_id int, attached_media string) error
 }
 
 type PostService struct {
@@ -47,4 +48,8 @@ func (ps *PostService) GetMostRecent(num_of_posts int) ([]models.RecentPostsDto,
 	}
 
 	return posts, nil
+}
+
+func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media string) error {
+	return ps.PostRepo.UpdateAttachedMedia(post_id, attached_media)
 }

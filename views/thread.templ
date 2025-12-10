@@ -30,7 +30,7 @@ templ ThreadSectionComponent(data any) {
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
             @OPPostComponent(model.OPPost, model.Topic, "", model.BoardUri, model.Id)
             <div class="postContainer">
-                @PostSectionComponent(model.Replies)
+                @PostSectionComponent(model.Replies, model.BoardUri)
             </div>
         </div>
         <hr>

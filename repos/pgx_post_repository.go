@@ -30,7 +30,8 @@ const (
 		FROM recent_posts
 		ORDER BY post_timestamp DESC
 		LIMIT $1`
-	p_create_new_query = `INSERT INTO posts(thread_id, identifier, content, is_op, has_media) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	p_create_new_query   = `INSERT INTO posts(thread_id, identifier, content, is_op, has_media) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	p_update_media_query = `UPDATE posts SET has_media = $2 WHERE id = $1`
 )
 
 type PostgresPostRepository struct {
@@ -99,4 +100,9 @@ func (r *PostgresPostRepository) GetMostRecent(num_of_posts int) ([]models.Recen
 		result = append(result, post)
 	}
 	return result, nil
+}
+
+func (r *PostgresPostRepository) UpdateAttachedMedia(post_id int, attached_media string) error {
+	_, err := r.db.Exec(p_update_media_query, post_id, attached_media)
+	return err
 }

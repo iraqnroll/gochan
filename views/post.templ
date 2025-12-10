@@ -115,13 +115,33 @@ templ NewThreadOrReplyComponent(data any) {
     </form>
 }
 
-templ PostSectionComponent(posts []models.PostDto) {
+templ PostSectionComponent(posts []models.PostDto, board_uri string) {
     for _, post := range posts {
         {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
+        <br>
         <div class="post reply" id={ post.Id }>
-            <span class="identifier">{ post.Identifier }</span>
-            <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
-            <span class="postId">{ postNo }</span>
+            <p class="intro">
+                <span class="identifier">{ post.Identifier }</span>
+                <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
+                <span class="postId">{ postNo }</span>
+            </p>
+            if post.HasMedia != "" {
+                {{ files := SplitStringBy(post.HasMedia, ';') }}
+                <div class="files">
+                    for _, file := range(files) {
+                        {{ srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, post.ThreadId, file)}}
+                        {{ thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)}}
+                        <div class="file">
+                            <p style="font-size:10px" class="fileinfo">
+                                <a href= { srcUrl }>{ file }</a>
+                            </p>
+                            <a href={ srcUrl } target="_blank">
+                                <img class="post-image" src={ thmbUrl } style="width:200px; height:200px" loading="lazy">
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
             <div class="body">{ post.Content }</div>
         </div>
     }
