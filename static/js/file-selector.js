@@ -7,49 +7,49 @@ export function init_file_selector()
     let fileList = new DataTransfer();
 
     const fileThumbs = document.getElementById("file-thumbs");
-
-    const dropZone = document.getElementById("dropzone");
-    dropZone.addEventListener("drop", dropHandler);
-
     const fileInput = document.getElementById("file-input");
-    fileInput.addEventListener("change", (e) => {
-        addUploadsToForm(e.target.files);
-    });
+    const dropZone = document.getElementById("dropzone");
 
+    if (fileThumbs != null || dropZone != null || fileInput != null) {
+        dropZone.addEventListener("drop", dropHandler);
+
+        fileInput.addEventListener("change", (e) => {
+            addUploadsToForm(e.target.files);
+        });
+
+        //Prevent all drop events except for if the user is dropping a file.
+        window.addEventListener("drop", (e) => {
+            if ([...e.dataTransfer.items].some((item) => item.kind === "file")) {
+                e.preventDefault();
+            }
+        })
+
+        dropZone.addEventListener("dragover", (e) => {
+            const fileItems = [...e.dataTransfer.items].filter(
+                (item) => item.kind === "file",
+            );
+            if (fileItems.length > 0) {
+                e.preventDefault();
+                if (fileItems.some((item) => item.type.startsWith("image/"))) {
+                    e.dataTransfer.dropEffect = "copy";
+                } else {
+                    e.dataTransfer.dropEffect = "none";
+                }
+            }
+        });
     
-
-    //Prevent all drop events except for if the user is dropping a file.
-    window.addEventListener("drop", (e) => {
-        if ([...e.dataTransfer.items].some((item) => item.kind === "file")) {
-            e.preventDefault();
-        }
-    })
-
-    dropZone.addEventListener("dragover", (e) => {
-        const fileItems = [...e.dataTransfer.items].filter(
-            (item) => item.kind === "file",
-        );
-        if (fileItems.length > 0) {
-            e.preventDefault();
-            if (fileItems.some((item) => item.type.startsWith("image/"))) {
-                e.dataTransfer.dropEffect = "copy";
-            } else {
-                e.dataTransfer.dropEffect = "none";
+        window.addEventListener("dragover", (e) => {
+            const fileItems = [...e.dataTransfer.items].filter(
+                (item) => item.kind === "file",
+            );
+            if (fileItems.length > 0) {
+                e.preventDefault();
+                if (!dropZone.contains(e.target)) {
+                    e.dataTransfer.dropEffect = "none";
+                }
             }
-        }
-    });
-
-    window.addEventListener("dragover", (e) => {
-        const fileItems = [...e.dataTransfer.items].filter(
-            (item) => item.kind === "file",
-        );
-        if (fileItems.length > 0) {
-            e.preventDefault();
-            if (!dropZone.contains(e.target)) {
-                e.dataTransfer.dropEffect = "none";
-            }
-        }
-    });
+        });
+    }
 
     function addUploadsToForm(files){
         let file_idx = fileInput.files.length;

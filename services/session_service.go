@@ -42,6 +42,8 @@ func (ss *SessionService) CreateNew(user_id int) (*models.Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("SessionService.CreateNew error : %w", err)
 	}
+	result.Token = token
+
 	return result, nil
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 	"github.com/iraqnroll/gochan/cmd/front/handlers"
+	"github.com/iraqnroll/gochan/cmd/front/middlewares"
 	"github.com/iraqnroll/gochan/config"
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/repos"
@@ -54,13 +55,12 @@ func (a *Frontend) Init(cfg *config.Config) {
 	a.DB = db
 
 	a.Router = chi.NewRouter()
+	a.InitServices()
 	a.InitMiddlewares(
 		cfg.Frontend.CsrfKey,
 		cfg.Frontend.CsrfSecure,
 		cfg.Frontend.CsrfTrustedOrigins,
 	)
-
-	a.InitServices()
 	a.InitFileServer(cfg.Frontend.StaticDir, "static")
 	a.InitRoutes()
 }
@@ -101,10 +101,15 @@ func (a *Frontend) InitRoutes() {
 	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
 	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10)
 	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
+	usersHandler := handlers.NewUsersHandler(a.UserService, a.SessionService, parentPageData)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
 		r.Get("/", homeHandler.Home)
+		r.Get("/login", usersHandler.LoginPage)
+		r.Post("/login", usersHandler.Login)
+		r.Post("/logout", usersHandler.Logout)
+
 		r.Get("/{board_uri}", boardHandler.Board)
 		r.Post("/{board_uri}", boardHandler.NewThread)
 
@@ -148,6 +153,9 @@ func (a *Frontend) InitMiddlewares(csrfKey string, csrfSecure bool, trusted_orig
 		csrf.FieldName("_csrf"),
 	)
 
+	userMw := middlewares.NewUsersMiddleware(a.SessionService)
+
 	a.Router.Use(csrfMw)
 	a.Router.Use(middleware.Logger)
+	a.Router.Use(userMw.SetUser)
 }

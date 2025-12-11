@@ -23,15 +23,18 @@ templ navbarBoardlist(boardList []models.BoardDto) {
 }
 
 templ navbarOptions(){
-	<span class="options">
-		<a href="/">home</a>
+	<div class="options">
+		<a href="/">Home</a>
 		if context.User(ctx) != nil {
-			<a href="/mod">mod panel</a>
-			<form action="/logout" method="post">
-				<button type="submit">logout</button>
-			</form>
+			<a href="/mod">Mod panel</a>
+			<a>
+				<form action="/logout" method="post">
+					<input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
+					<button type="submit">Logout</button>
+				</form>
+			</a>
 		} else {
-			<a href="/login">login</a>
+			<a href="/login">Login</a>
 		}
-	</span>
+	</div>
 }

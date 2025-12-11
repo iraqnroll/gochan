@@ -159,12 +159,20 @@ div.boardlist a {
     color: #800;
 }
 
-div.boardlist span.options {
+div.boardlist div.options {
     float: right;
+    white-space: nowrap;
 }
 
-div.boardlist span.options button {
+div.boardlist div.options a {
+    padding-left:2px;
+    padding-right: 2px;
+    display: inline-block;
+}
+
+div.boardlist div.options button {
     all: unset;
+    cursor:pointer;
 }
 
 table.usertable {

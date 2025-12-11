@@ -44,7 +44,7 @@ func (sr *PostgresSessionRepository) CreateNew(user_id int, hashed_token string)
 func (sr *PostgresSessionRepository) GetUserByToken(hashed_token string) (*models.User, error) {
 	result := models.User{}
 	row := sr.db.QueryRow(s_get_by_token_query, hashed_token)
-	err := row.Scan(&result.Id, &result.Password_hash)
+	err := row.Scan(&result.Id, &result.Username, &result.Password_hash)
 	if err != nil {
 		return nil, fmt.Errorf("PostgresSessionRepository.GetUserByToken : %w", err)
 	}
