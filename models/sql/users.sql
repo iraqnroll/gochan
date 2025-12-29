@@ -6,6 +6,6 @@ username TEXT UNIQUE NOT NULL,
 password_hash TEXT NOT NULL,
 email TEXT UNIQUE NOT NULL,
 date_created TIMESTAMP NOT NULL DEFAULT NOW(),
-date_updated TIMESTAMP,
+date_updated TIMESTAMP NULL DEFAULT NOW(),
 user_type INT NOT NULL
 );

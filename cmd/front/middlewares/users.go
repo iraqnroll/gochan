@@ -42,7 +42,7 @@ func (umw UsersMiddleware) SetUser(next http.Handler) http.Handler {
 	})
 }
 
-func (umw UsersMiddleware) RequireUser(next http.Handler) http.Handler {
+func RequireUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := context.User(r.Context())
 		if user == nil {

@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetAll() ([]models.User, error)
 	GetPwHashByUsername(username string) (*models.User, error)
 	GetUserById(user_id int) (*models.User, error)
+	UpdateUser(user_id, user_type int, username, password_hash, email string) (*models.User, error)
 }
 
 type UserService struct {
@@ -38,7 +39,7 @@ func (us *UserService) CreateNew(username, password, email string, user_type int
 	username = strings.ToLower(username)
 
 	//Hash the password before storing in DB
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedBytes, err := us.HashPassword(password)
 	if err != nil {
 		return nil, fmt.Errorf("UserService.CreateNew failed : %w", err)
 	}
@@ -77,6 +78,19 @@ func (us *UserService) Authenticate(username, password string) (*models.User, er
 	err = bcrypt.CompareHashAndPassword([]byte(result.Password_hash), []byte(password))
 	if err != nil {
 		return nil, fmt.Errorf("UserService.Authenticate failed : %w", err)
+	}
+
+	return result, nil
+}
+
+func (us *UserService) HashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+}
+
+func (us *UserService) UpdateUser(user_id, user_type int, username, password_hash, email string) (*models.User, error) {
+	result, err := us.userRepo.UpdateUser(user_id, user_type, username, password_hash, email)
+	if err != nil {
+		return nil, fmt.Errorf("UserService.UpdateUser failed: %w", err)
 	}
 
 	return result, nil

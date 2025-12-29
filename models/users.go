@@ -8,4 +8,5 @@ type User struct {
 	Date_created  string `json:"date_created"`
 	Date_updated  string `json:"date_updated"`
 	User_type     int    `json:"user_type"`
+	Password      string
 }

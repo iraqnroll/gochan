@@ -1,0 +1,196 @@
+package views
+
+import (
+	"github.com/iraqnroll/gochan/models"
+	"fmt"
+)
+
+templ ModPageComponent(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @ModMenuComponent()
+    }
+}
+
+templ ModUsersPageComponent(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @ModUsersComponent(pageData.ChildViewModel)
+    }
+}
+
+templ ModUpdateUserPageComponent(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        //@ModCreateNewUserComponent(pageData.ChildViewModel)
+    }
+}
+
+templ ModUsersComponent(data any) {
+    //@ModCreateNewUserComponent(nil)
+    if model, ok := data.(models.ModUsersViewModel); ok {
+        @ModRegisteredUsersListComponent(model)
+    }
+}
+
+templ ModRegisteredUsersListComponent(users models.ModUsersViewModel) {
+    <table class="adminpanel" style="margin-left:auto;margin-right:auto;width:auto;">
+        <h3 style="text-align:center;">User list</h3>
+        <tbody>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Created</th>
+                <th>Last updated</th>
+                <th>User type</th>
+                <th>Actions</th>
+            </tr>
+            for _, user := range users.RegisteredUsers {
+                {{ deleteUrl := fmt.Sprintf("/mod/users/delete/%d", user.Id) }}
+                {{ updateUrl := fmt.Sprintf("/mod/users/update/%d", user.Id) }}
+                <tr>
+                    <td>{ user.Id }</td>
+                    <td>{ user.Username }</td>
+                    <td>{ user.Email }</td>
+                    <td>{ user.Date_created }</td>
+                    <td>{ user.Date_updated }</td>
+                    <td>{ user.User_type }</td>
+                    <td>
+                        <form action={ deleteUrl } method="post" class="inline pr-4">
+                            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+                            <button type="submit">Delete</button>
+                        </form>
+                        <form action={ updateUrl } method="get" class="inline pr-4">
+                            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+                            <button type="submit">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+// templ ModCreateNewUserComponent(data any) {
+//     {{ createUrl := fmt.Sprintf("/mod/users/create") }}
+//     {{ updateUrl := fmt}}
+//     <form action="/mod/users/create" method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
+//         <h3>Create a new user</h3>
+//         <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+//         <table>
+//             <tbody>
+//                 <tr>
+//                     <th>Username</th>
+//                     <td>
+//                         if model, ok := data.(models.ModUserViewModel); ok {
+//                             <input
+//                                 size="20"
+//                                 maxlength="30"
+//                                 type="text"
+//                                 name="Username"
+//                                 id="Username"
+//                                 required
+//                                 value={ model.EditableUser.Username }/>
+//                         } else {
+//                             <input
+//                                 size="20"
+//                                 maxlength="30"
+//                                 type="text"
+//                                 name="Username"
+//                                 id="Username"
+//                                 required
+//                                 value autocomplete="off">
+//                         }
+//                     </td>
+//                 </tr>
+//                 <tr>
+//                     <th>E-mail</th>
+//                     <td>
+//                     if model, ok := data.(models.ModUserViewModel); ok {
+//                         <input
+//                             name="Email"
+//                             id="Email"
+//                             type="text"
+//                             size="20"
+//                             maxlength="40"
+//                             required
+//                             value={ model.EditableUser.Email }/>
+//                     } else {
+//                         <input
+//                                 name="Email"
+//                                 id="Email"
+//                                 type="text"
+//                                 size="20"
+//                                 maxlength="40"
+//                                 required
+//                                 value={ model.EditableUser.Email }/>   
+//                     }
+//                     </td>
+//                 </tr>
+//                 <tr>
+//                     <th>Password</th>
+//                     <td>
+//                         <input
+//                             name="Password"
+//                             id="Password"
+//                             type="password"
+//                             size="20"
+//                             maxlength="30"
+//                             required/>
+//                     </td>
+//                 </tr>
+//                 <tr>
+//                     <th>User type</th>
+//                     <td>
+//                     if model, ok := data.(models.ModUserViewModel); ok {
+//                         <input
+//                             name="User_type"
+//                             id="User_type"
+//                             type="text"
+//                             placeholder="1"
+//                             size="20"
+//                             required
+//                             value={ model.EditableUser.User_type }/>
+//                     } else {
+//                         <input
+//                             name="User_type"
+//                             id="User_type"
+//                             type="text"
+//                             placeholder="1"
+//                             size="20"
+//                             required/>
+//                     }
+//                     </td>
+//                 </tr>
+//             </tbody>
+//         </table>
+//         <ul style="padding:0; text-align: center; list-style:none;">
+//             <li>
+//                 if model, ok := data.(models.ModUserViewModel); ok {
+//                     <input type="submit" value="Update user">
+//                 } else {
+//                     <input type="submit" value="Create new user">
+//                 }
+//             </li>
+//         </ul>
+//     </form>
+// }
+
+templ ModMenuComponent() {
+    <header>
+        <h4>Admin board</h4>
+    </header>
+    <div class="banwrap">
+        <div class="ban">
+            <h2>
+                Actions:
+            </h2>
+            <ul>
+                <li>
+                    <a href="/mod/users">Manage users</a>
+                </li>
+                <li>
+                    <a href="/mod/boards">Manage boards</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+}

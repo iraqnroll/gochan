@@ -102,6 +102,7 @@ func (a *Frontend) InitRoutes() {
 	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10)
 	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
 	usersHandler := handlers.NewUsersHandler(a.UserService, a.SessionService, parentPageData)
+	modHandler := handlers.NewModHandler(a.UserService, a.BoardService, a.ThreadService, a.FileService, parentPageData)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
@@ -118,6 +119,16 @@ func (a *Frontend) InitRoutes() {
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Page not found.", http.StatusNotFound)
+		})
+	})
+
+	a.Router.Route("/mod", func(r chi.Router) {
+		r.Use(middlewares.RequireUser)
+		r.Get("/", modHandler.ModPage)
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", modHandler.ModUsers)
+			r.Post("/create", modHandler.CreateUser)
+			r.Post("/delete/{user_id}", modHandler.DeleteUser)
 		})
 	})
 }

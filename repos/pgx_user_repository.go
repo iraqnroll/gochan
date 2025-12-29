@@ -25,6 +25,12 @@ const (
 		COALESCE(to_char(date_created, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_created,
 		COALESCE(to_char(date_updated, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_updated,
 		usertype FROM users WHERE id = $1`
+	u_update_query = `UPDATE users SET
+		username = $2,
+		password_hash = $3,
+		email = $4,
+		user_type = $5
+		WHERE id = $1`
 )
 
 type PostgresUserRepository struct {
@@ -96,5 +102,21 @@ func (r *PostgresUserRepository) GetPwHashByUsername(username string) (*models.U
 		return nil, fmt.Errorf("PostgresUserRepository.GetPwHashByUsername failed : %w", err)
 	}
 
+	return &result, nil
+}
+
+func (r *PostgresUserRepository) UpdateUser(user_id, user_type int, username, password_hash, email string) (*models.User, error) {
+	result := models.User{
+		Id:            user_id,
+		Username:      username,
+		Password_hash: password_hash,
+		Email:         email,
+		User_type:     user_type,
+	}
+
+	_, err := r.db.Exec(u_update_query, result.Id, result.Username, result.Password_hash, result.Email, result.User_type)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresUserRepository.UpdateUser failed : %w", err)
+	}
 	return &result, nil
 }
