@@ -18,6 +18,7 @@ import (
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/repos"
 	"github.com/iraqnroll/gochan/services"
+	"github.com/pressly/goose"
 )
 
 type Frontend struct {
@@ -53,6 +54,12 @@ func (a *Frontend) Init(cfg *config.Config) {
 
 	a.Settings = cfg
 	a.DB = db
+
+	goose.SetLogger(log.Default())
+	if err := goose.Up(db, "./migrations"); err != nil {
+		panic(err)
+	}
+	fmt.Println("Migrations applied successfully.")
 
 	a.Router = chi.NewRouter()
 	a.InitServices()
