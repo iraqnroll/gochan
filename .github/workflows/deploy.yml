@@ -1,0 +1,41 @@
+name: Deploy Gochan
+
+on:
+  workflow_run:
+    workflows: ["Build & Publish Docker image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # only run if publish workflow succeeded
+
+    steps:
+      - name: SSH Deploy to Server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            DEPLOY_DIR=/home/grybas/gochan_dev
+
+            echo "Creating deployment directory if missing..."
+            mkdir -p $DEPLOY_DIR
+            cd $DEPLOY_DIR
+
+            echo "Looking for docker-compose.yml..."
+            if [ ! -f docker-compose.yml ]; then
+              echo "docker-compose.yml not found, downloading from repo..."
+              curl -O https://raw.githubusercontent.com/iraqnroll/gochan/main/docker-compose.yml
+            fi
+            
+            echo "Logging into GitHub Packages..."
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "Pulling latest gochan app image..."
+            docker compose pull app
+
+            echo "Recreating gochan app container (WARNING: adminer and postgres containers stay untouched.)"
+            docker compose up -d app
