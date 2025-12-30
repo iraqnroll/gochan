@@ -37,5 +37,5 @@ jobs:
             echo "Pulling latest gochan app image..."
             docker compose pull app
 
-            echo "Recreating gochan app container (WARNING: adminer and postgres containers stay untouched.)"
-            docker compose up -d app
+            echo "Recreating gochan app and other relevant containers (postgres/adminer)"
+            docker compose up -d 
