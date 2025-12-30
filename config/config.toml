@@ -12,7 +12,7 @@ csrfsecure = false
 csrftrustedorigins = ["localhost:3000"]
 
 [database]
-host = "localhost"
+host = "db"
 port = "5432"
 user = "admin"
 password = "changethepassword"

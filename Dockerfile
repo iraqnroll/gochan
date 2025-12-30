@@ -1,0 +1,53 @@
+# Step 1: Build the Go binary
+FROM golang:1.24.3-alpine AS builder
+
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go build -o gochan main.go
+
+# Step 2: Minimal runtime image with ImageMagick
+FROM alpine:latest
+
+# Install certificates and ImageMagick
+RUN apk --no-cache add ca-certificates imagemagick
+
+# Create a non-root user and group
+RUN addgroup -S gochan && adduser -S gochan -G gochan
+
+# Create app directory
+RUN mkdir /app && chown gochan:gochan /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy Go binary from builder
+COPY --from=builder /app/gochan .
+
+#Copy static assets (css/js)
+COPY static/js /app/static/js
+COPY static/stylesheets /app/static/stylesheets
+
+#Copy migrations
+COPY migrations /app/migrations
+
+#Copu config
+COPY config/config.toml /app/config/config.toml
+
+# Expose port
+EXPOSE 8080
+
+# Switch to non-root user
+USER gochan
+
+# Run the binary
+CMD ["./gochan"]

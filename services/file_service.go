@@ -22,7 +22,7 @@ func NewFileService() *FileService {
 
 // Create a directory to store board-specific static content
 func (fs *FileService) CreateBoardStatic(board_uri string) error {
-	parent_path := filepath.Join(".", "static", board_uri)
+	parent_path := filepath.Join(".", "static", "content", board_uri)
 
 	//Create a directory for board specific banners
 	path := filepath.Join(parent_path, "banners")
@@ -43,7 +43,7 @@ func (fs *FileService) CreateBoardStatic(board_uri string) error {
 
 // Deletes a board-specific directory for static content (recursive)
 func (fs *FileService) RemoveBoardStatic(board_uri string) error {
-	path := filepath.Join(".", "static", board_uri)
+	path := filepath.Join(".", "static", "content", board_uri)
 	err := os.RemoveAll(path)
 	if err != nil {
 		return fmt.Errorf("FileService.RemoveBoardStatic failed :%w", err)
@@ -54,7 +54,7 @@ func (fs *FileService) RemoveBoardStatic(board_uri string) error {
 
 // Returns a uri for a randomly-picked board-specific banner
 func (fs *FileService) GetBoardBannerUri(board_uri string) (string, error) {
-	parent_path := filepath.Join(".", "static", board_uri, "banners")
+	parent_path := filepath.Join(".", "static", "content", board_uri, "banners")
 	banners, err := os.ReadDir(parent_path)
 	if err != nil {
 		return "", fmt.Errorf("FileService.GetBoardBannerUri failed : %w", err)
@@ -112,8 +112,8 @@ func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_ur
 // Creates directories & returns filepaths for thumbnails and source images that were uploaded for a specific post
 // TODO: only allow whitelisted and validated extensions to reach this part of code...
 func createThreadStaticDirectories(board_uri, file_ext string, thread_id, post_id, f_idx int) (string, string) {
-	threadSrcPath := filepath.Join(".", "static", board_uri, "src", strconv.Itoa(thread_id))
-	threadThbPath := filepath.Join(".", "static", board_uri, "thumbs", strconv.Itoa(thread_id))
+	threadSrcPath := filepath.Join(".", "static", "content", board_uri, "src", strconv.Itoa(thread_id))
+	threadThbPath := filepath.Join(".", "static", "content", board_uri, "thumbs", strconv.Itoa(thread_id))
 
 	err := os.MkdirAll(threadSrcPath, 0755)
 	if err != nil {

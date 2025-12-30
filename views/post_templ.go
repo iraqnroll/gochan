@@ -220,8 +220,8 @@ func PostSectionComponent(posts []models.PostDto, board_uri string) templ.Compon
 					return templ_7745c5c3_Err
 				}
 				for _, file := range files {
-					srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, post.ThreadId, file)
-					thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)
+					srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, post.ThreadId, file)
+					thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<div class=\"file\"><p style=\"font-size:10px\" class=\"fileinfo\"><a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -335,8 +335,8 @@ func OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string,
 				return templ_7745c5c3_Err
 			}
 			for _, file := range files {
-				srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, thread_id, file)
-				thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, thread_id, file)
+				srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, thread_id, file)
+				thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, thread_id, file)
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"file\"><p style=\"font-size:10pt\" class=\"fileinfo\"><a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

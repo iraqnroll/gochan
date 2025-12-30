@@ -130,8 +130,8 @@ templ PostSectionComponent(posts []models.PostDto, board_uri string) {
                 {{ files := SplitStringBy(post.HasMedia, ';') }}
                 <div class="files">
                     for _, file := range(files) {
-                        {{ srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, post.ThreadId, file)}}
-                        {{ thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)}}
+                        {{ srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, post.ThreadId, file)}}
+                        {{ thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)}}
                         <div class="file">
                             <p style="font-size:10px" class="fileinfo">
                                 <a href= { srcUrl }>{ file }</a>
@@ -154,8 +154,8 @@ templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string
         {{ files := SplitStringBy(op_post.HasMedia, ';') }}
         <div class="file">
             for _, file := range(files) {
-                {{ srcUrl := fmt.Sprintf("/static/%s/src/%d/%s", board_uri, thread_id, file)}}
-                {{ thmbUrl := fmt.Sprintf("/static/%s/thumbs/%d/%s", board_uri, thread_id, file)}}
+                {{ srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, thread_id, file)}}
+                {{ thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, thread_id, file)}}
                 <div class="file">
                     <p style="font-size:10pt" class="fileinfo">
                         <a href= { srcUrl }>{ file }</a>

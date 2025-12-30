@@ -1,2 +1,7 @@
 modd.conf
 bin
+static/*
+!static/stylesheets
+!/static/js
+.vscode
+.env

@@ -1,17 +1,45 @@
 services:
+  app:
+    build: .
+    container_name: gochan
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    restart: always
+    volumes:
+      - static_content:/app/static/content
+    networks:
+      - gochan_network
   db:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: changethepassword
-      POSTGRES_DB: gochan
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./gochan_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - gochan_network
   adminer:
     image: adminer
     restart: always
     environment:
       ADMINER_DESIGN: dracula
     ports:
-      - 3333:8080
+      - 3333:3333
+    depends_on:
+      - db
+    networks:
+      - gochan_network
+
+volumes:
+  static_content:
+  postgres_data:
+
+networks:
+  gochan_network:
+    driver: bridge
