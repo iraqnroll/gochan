@@ -9,7 +9,7 @@ enabled = true
 staticdir = "/static"
 csrfkey = "gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"
 csrfsecure = false
-csrftrustedorigins = ["localhost:3000"]
+csrftrustedorigins = ["*"]
 
 [database]
 host = "db"
