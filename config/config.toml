@@ -9,7 +9,7 @@ enabled = true
 staticdir = "/static"
 csrfkey = "gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"
 csrfsecure = false
-csrftrustedorigins = ["*"]
+csrftrustedorigins = ["gochan.local:3000"]
 
 [database]
 host = "db"
