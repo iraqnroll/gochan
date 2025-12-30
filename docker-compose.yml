@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ghcr.io/iraqnroll/gochan:latest
     container_name: gochan
     ports:
       - "3000:3000"
