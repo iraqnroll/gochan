@@ -2,6 +2,7 @@ package views
 
 import (
 	"github.com/iraqnroll/gochan/models"
+    "github.com/iraqnroll/gochan/context"
 	"fmt"
 )
 
@@ -23,51 +24,217 @@ templ ModUpdateUserPageComponent(pageData models.ParentPageData) {
     }
 }
 
-templ ModUsersComponent(data any) {
-    @ModCreateEditUserComponent(nil)
-    if model, ok := data.(models.ModUsersViewModel); ok {
-        @ModRegisteredUsersListComponent(model)
+templ ModUpdateBoardPageComponent(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @ModCreateEditBoardComponent(pageData.ChildViewModel)
     }
 }
 
-templ ModRegisteredUsersListComponent(users models.ModUsersViewModel) {
-    <table class="adminpanel" style="margin-left:auto;margin-right:auto;width:auto;">
-        <h3 style="text-align:center;">User list</h3>
-        <tbody>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Created</th>
-                <th>Last updated</th>
-                <th>User type</th>
-                <th>Actions</th>
-            </tr>
-            for _, user := range users.RegisteredUsers {
-                {{ deleteUrl := fmt.Sprintf("/mod/users/delete/%d", user.Id) }}
-                {{ updateUrl := fmt.Sprintf("/mod/users/update/%d", user.Id) }}
-                <tr>
-                    <td>{ user.Id }</td>
-                    <td>{ user.Username }</td>
-                    <td>{ user.Email }</td>
-                    <td>{ user.Date_created }</td>
-                    <td>{ user.Date_updated }</td>
-                    <td>{ user.User_type }</td>
-                    <td>
-                        <form action={ deleteUrl } method="post" class="inline pr-4">
-                            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
-                            <button type="submit">Delete</button>
-                        </form>
-                        <form action={ updateUrl } method="get">
-                            <button type="submit">Update</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+templ ModBoardsPageComponent(pageData models.ParentPageData) {
+    @RootWrapper(pageData.Footer) {
+        @ModBoardsComponent(pageData.ChildViewModel)
+    }
 }
 
+templ ModUsersComponent(data any) {
+    @ModCreateEditUserComponent(nil)
+    @ModRegisteredUsersListComponent(data)
+}
+
+templ ModBoardsComponent(data any) {
+    @ModCreateEditBoardComponent(data)
+    @ModRegisteredBoardsListComponent(data)
+}
+
+templ ModRegisteredBoardsListComponent(data any) {
+    if model, ok := data.(models.ModBoardsViewModel); ok {
+        <table class="adminpanel" style="margin-left:auto;margin-right:auto;width:auto;">
+            <h3 style="text-align:center;">Registered boards</h3>
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <th>Uri</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Created</th>
+                    <th>Last updated</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+                for _, board := range model.RegisteredBoards {
+                    {{ updateUrl := fmt.Sprintf("/mod/boards/update/%d", board.Id) }}
+                    <tr>
+                        <td>{ board.Id }</td>
+                        <td>{ board.Uri }</td>
+                        <td>{ board.Name }</td>
+                        <td>{ board.Description }</td>
+                        <td>{ board.Date_created }</td>
+                        <td>{ board.Date_updated }</td>
+                        <td>{ board.OwnerUsername }</td>
+                        <td>
+                            <form action="/mod/boards/delete" method="post" class="inline pr-4">
+                                <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+                                <input class="hidden" name="boardId" value={ board.Id } />
+                                <input class="hidden" name="boardUri" value={ board.Uri }/>
+                                <button type="submit">Delete</button>
+                            </form>
+                            <form action={ updateUrl } method="get">
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+templ ModRegisteredUsersListComponent(data any) {
+    if users, ok := data.(models.ModUsersViewModel); ok {
+        <table class="adminpanel" style="margin-left:auto;margin-right:auto;width:auto;">
+            <h3 style="text-align:center;">User list</h3>
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Created</th>
+                    <th>Last updated</th>
+                    <th>User type</th>
+                    <th>Actions</th>
+                </tr>
+                for _, user := range users.RegisteredUsers {
+                    {{ deleteUrl := fmt.Sprintf("/mod/users/delete/%d", user.Id) }}
+                    {{ updateUrl := fmt.Sprintf("/mod/users/update/%d", user.Id) }}
+                    <tr>
+                        <td>{ user.Id }</td>
+                        <td>{ user.Username }</td>
+                        <td>{ user.Email }</td>
+                        <td>{ user.Date_created }</td>
+                        <td>{ user.Date_updated }</td>
+                        <td>{ user.User_type }</td>
+                        <td>
+                            <form action={ deleteUrl } method="post" class="inline pr-4">
+                                <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+                                <button type="submit">Delete</button>
+                            </form>
+                            <form action={ updateUrl } method="get">
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+templ ModCreateEditBoardComponent(data any) {
+    if model, ok := data.(models.ModBoardViewModel); ok {
+        {{ formUrl := fmt.Sprintf("/mod/boards/update/%d", model.EditableBoard.Id)}}
+        <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
+            <h3>Update Board { model.EditableBoard.Name }</h3>
+            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+            @ModCreateEditBoardForm(data)
+            <ul style="padding:0; text-align: center; list-style:none;">
+            <li>
+                <input type="submit" value="Update">
+            </li>
+        </ul>
+        </form>
+    } else {
+        {{ formUrl := "/mod/boards/create"}}
+        <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
+            <h3>Create a new board</h3>
+            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+            @ModCreateEditBoardForm(data)
+            <ul style="padding:0; text-align: center; list-style:none;">
+            <li>
+                <input type="submit" value="Create">
+            </li>
+        </ul>
+        </form>
+    }
+}
+
+templ ModCreateEditBoardForm(data any) {
+    {{ user := context.User(ctx) }}
+    <table>
+        <tr>
+            <th>Uri</th>
+            <td>
+                if model, ok := data.(models.ModBoardViewModel); ok {
+                    <input
+                        name="Uri"
+                        id="Uri"
+                        type="text"
+                        size="20"
+                        maxlength="10"
+                        value={ model.EditableBoard.Uri }
+                        required/>
+                } else {
+                    <input
+                        name="Uri"
+                        id="Uri"
+                        type="text"
+                        size="20"
+                        maxlength="10"
+                        value autocomplete="off"
+                        required/>
+                }
+            </td>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <td>
+                if model, ok := data.(models.ModBoardViewModel); ok {
+                    <input
+                        name="Name"
+                        id="Name"
+                        type="text"
+                        size="20"
+                        maxlength="30"
+                        value={ model.EditableBoard.Name }
+                        required/>
+                } else {
+                    <input
+                        name="Name"
+                        id="Name"
+                        type="text"
+                        size="20"
+                        maxlength="30"
+                        value autocomplete="off"
+                        required/>
+                }
+            </td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>
+            if model, ok := data.(models.ModBoardViewModel); ok {
+                <input
+                    name="Description"
+                    id="Description"
+                    type="text"
+                    size="20"
+                    maxlength="30"
+                    value={ model.EditableBoard.Description }
+                    required/>
+            } else {
+                <input
+                    name="Description"
+                    id="Description"
+                    type="text"
+                    size="20"
+                    maxlength="30"
+                    value autocomplete="off"
+                    required/>
+            }
+            </td>
+        </tr>
+        <input class="hidden" name="OwnerId" id="OwnerId" type="text" value={ user.Id }/>
+    </table>
+}
 templ ModCreateEditUserComponent(data any) {
     if model, ok := data.(models.ModUserViewModel); ok {
         {{ formUrl := fmt.Sprintf("/mod/users/update/%d", model.EditableUser.Id)}}

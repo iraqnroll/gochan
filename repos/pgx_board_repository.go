@@ -25,6 +25,12 @@ const (
 	b_create_new_query = `INSERT INTO boards (uri, name, description, ownerId)
 		VALUES ($1,$2,$3,$4) RETURNING id, to_char(date_created, 'YYYY-MM-DD HH24:MI:SS')`
 	b_delete_query = `DELETE FROM boards WHERE id = $1`
+	b_update_query = `UPDATE boards SET
+		uri = $2,
+		name = $3,
+		description = $4,
+		date_updated = NOW()
+		WHERE id = $1`
 )
 
 // Implementation of the BoardRepository for pgx/Postgres
@@ -139,4 +145,19 @@ func (r *PostgresBoardRepository) GetAll() ([]models.BoardDto, error) {
 	}
 
 	return result, nil
+}
+
+func (r *PostgresBoardRepository) Update(board_id int, uri, name, description string) (*models.BoardDto, error) {
+	result := models.BoardDto{
+		Id:          board_id,
+		Uri:         uri,
+		Name:        name,
+		Description: description,
+	}
+
+	_, err := r.db.Exec(b_update_query, result.Id, result.Uri, result.Name, result.Description)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresBoardRepository.UpdateBoard failed : %w", err)
+	}
+	return &result, nil
 }

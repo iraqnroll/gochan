@@ -15,6 +15,7 @@ type BoardRepository interface {
 
 	CreateNew(uri, name, description string, owner_id int) (models.Board, error)
 	Delete(id int) error
+	Update(board_id int, uri, name, description string) (*models.BoardDto, error)
 }
 
 type IThreadService interface {
@@ -50,6 +51,15 @@ func (bs *BoardService) GetBoard(uri string) (*models.BoardDto, error) {
 		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
 	}
 
+	return &result, nil
+}
+
+// Fetches board by id (only board metadata, no threads/posts are attached.)
+func (bs *BoardService) GetBoardById(id int) (*models.BoardDto, error) {
+	result, err := bs.boardRepo.GetById(id)
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.GetBoardById failed : %w", err)
+	}
 	return &result, nil
 }
 
@@ -100,4 +110,13 @@ func (bs *BoardService) Delete(boardId int, boardUri string) error {
 	}
 
 	return nil
+}
+
+func (bs *BoardService) UpdateBoard(board_id int, uri, name, description string) (*models.BoardDto, error) {
+	result, err := bs.boardRepo.Update(board_id, uri, name, description)
+	if err != nil {
+		return nil, fmt.Errorf("BoardService.UpdateBoard failed: %w", err)
+	}
+
+	return result, nil
 }

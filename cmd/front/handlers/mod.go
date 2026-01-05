@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	DEFAULT_USERS_REDIRECT = "/mod/users"
+	DEFAULT_USERS_REDIRECT  = "/mod/users"
+	DEFAULT_BOARDS_REDIRECT = "/mod/boards"
 )
 
 type Mod struct {
@@ -54,6 +55,51 @@ func (m Mod) ModUsers(w http.ResponseWriter, r *http.Request) {
 	views.ModUsersPageComponent(m.ParentPage).Render(r.Context(), w)
 }
 
+func (m Mod) ModBoards(w http.ResponseWriter, r *http.Request) {
+	boards, err := m.BoardService.GetAdminBoardList()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	m.ParentPage.ChildViewModel = models.NewModBoardsViewModel(boards)
+	views.ModBoardsPageComponent(m.ParentPage).Render(r.Context(), w)
+}
+
+func (m Mod) EditBoardPage(w http.ResponseWriter, r *http.Request) {
+	board_id, err := strconv.Atoi(chi.URLParam(r, "board_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	board, err := m.BoardService.GetBoardById(board_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	m.ParentPage.ChildViewModel = models.NewModBoardViewModel(*board)
+	views.ModUpdateBoardPageComponent(m.ParentPage).Render(r.Context(), w)
+}
+
+func (m Mod) EditUserPage(w http.ResponseWriter, r *http.Request) {
+	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := m.UserService.GetUserById(user_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	m.ParentPage.ChildViewModel = models.NewModUserViewModel(*user)
+	views.ModUpdateUserPageComponent(m.ParentPage).Render(r.Context(), w)
+}
+
 func (m Mod) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -79,6 +125,31 @@ func (m Mod) CreateUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, DEFAULT_USERS_REDIRECT, http.StatusFound)
 }
 
+func (m Mod) CreateBoard(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var model models.Board
+	dec := schema.NewDecoder()
+	dec.IgnoreUnknownKeys(true)
+	err = dec.Decode(&model, r.PostForm)
+	if err != nil {
+		fmt.Printf("Failed to decode form : %s", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err = m.BoardService.Create(model.Uri, model.Name, model.Description, model.OwnerId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, DEFAULT_BOARDS_REDIRECT, http.StatusFound)
+}
+
 func (m Mod) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
 	if err != nil {
@@ -94,21 +165,53 @@ func (m Mod) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, DEFAULT_USERS_REDIRECT, http.StatusFound)
 }
 
-func (m Mod) EditUserPage(w http.ResponseWriter, r *http.Request) {
-	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
+func (m Mod) DeleteBoard(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user, err := m.UserService.GetUserById(user_id)
+	board_id, err := strconv.Atoi(r.FormValue("boardId"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	board_uri := r.FormValue("boardUri")
+
+	err = m.BoardService.Delete(board_id, board_uri)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, DEFAULT_BOARDS_REDIRECT, http.StatusFound)
+}
+
+// TODO: Handle static content folder changes relative to board metadata changes (only URI update necessary for now.)
+func (m Mod) UpdateBoard(w http.ResponseWriter, r *http.Request) {
+	board_id, err := strconv.Atoi(chi.URLParam(r, "board_id"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	m.ParentPage.ChildViewModel = models.NewModUserViewModel(*user)
-	views.ModUpdateUserPageComponent(m.ParentPage).Render(r.Context(), w)
+	var model models.BoardDto
+	dec := schema.NewDecoder()
+	dec.IgnoreUnknownKeys(true)
+	err = dec.Decode(&model, r.PostForm)
+	if err != nil {
+		fmt.Printf("Failed to decode form : %s", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err = m.BoardService.UpdateBoard(board_id, model.Uri, model.Name, model.Description)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, DEFAULT_BOARDS_REDIRECT, http.StatusFound)
+
 }
 
 func (m Mod) UpdateUser(w http.ResponseWriter, r *http.Request) {
