@@ -16,7 +16,8 @@ const (
 		email,
 		COALESCE(to_char(date_created, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_created,
 		COALESCE(to_char(date_updated, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_updated,
-		user_type FROM users`
+		user_type FROM users
+		ORDER BY date_updated DESC`
 	u_get_pw_hash_query = `SELECT id, password_hash FROM users WHERE username = $1`
 	u_get_by_id_query   = `SELECT 
 		username,
@@ -24,11 +25,12 @@ const (
 		email,
 		COALESCE(to_char(date_created, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_created,
 		COALESCE(to_char(date_updated, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS date_updated,
-		usertype FROM users WHERE id = $1`
+		user_type FROM users WHERE id = $1`
 	u_update_query = `UPDATE users SET
 		username = $2,
 		password_hash = $3,
 		email = $4,
+		date_updated = NOW(),
 		user_type = $5
 		WHERE id = $1`
 )

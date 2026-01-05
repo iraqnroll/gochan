@@ -13,3 +13,9 @@ func NewModUsersViewModel(registered_users []User) (m ModUsersViewModel) {
 
 	return m
 }
+
+func NewModUserViewModel(registered_user User) (m ModUserViewModel) {
+	m.EditableUser = registered_user
+
+	return m
+}

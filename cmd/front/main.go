@@ -134,7 +134,10 @@ func (a *Frontend) InitRoutes() {
 		r.Get("/", modHandler.ModPage)
 		r.Route("/users", func(r chi.Router) {
 			r.Get("/", modHandler.ModUsers)
+			r.Get("/update/{user_id}", modHandler.EditUserPage)
+
 			r.Post("/create", modHandler.CreateUser)
+			r.Post("/update/{user_id}", modHandler.UpdateUser)
 			r.Post("/delete/{user_id}", modHandler.DeleteUser)
 		})
 	})

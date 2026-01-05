@@ -94,6 +94,23 @@ func (m Mod) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, DEFAULT_USERS_REDIRECT, http.StatusFound)
 }
 
+func (m Mod) EditUserPage(w http.ResponseWriter, r *http.Request) {
+	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := m.UserService.GetUserById(user_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	m.ParentPage.ChildViewModel = models.NewModUserViewModel(*user)
+	views.ModUpdateUserPageComponent(m.ParentPage).Render(r.Context(), w)
+}
+
 func (m Mod) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
 	if err != nil {
