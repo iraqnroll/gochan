@@ -38,7 +38,7 @@ services:
 
 volumes:
   static_content:
-  postgres_data:
+  gochan_data:
 
 networks:
   gochan_network:
