@@ -15,7 +15,6 @@ To run Gochan, you'll need:
 Optional for accessing from other machines or hosting on development a server:
 
 - Open relevant ports for Gochan **(default 3000)** and Adminer **(default 3333)** in your firewall.
-- Map your server's host address in your client machine to a temporary hostname **gochan.local**, this is needed for CSRF trusted origins.
 
 ## Usage
 By default, Gochan ships with a preconfigured admin account:
