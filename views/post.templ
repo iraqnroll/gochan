@@ -7,7 +7,6 @@ import (
 
 templ NewThreadOrReplyComponent(data any) {
     <form id="newThread" method="post" class="activeform" enctype="multipart/form-data">
-            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
             switch model := data.(type) {
                 case models.BoardViewModel:
                     <h3>Create a new thread:</h3>

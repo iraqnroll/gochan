@@ -115,7 +115,6 @@ templ ModRegisteredUsersListComponent(data any) {
                         <td>{ user.User_type }</td>
                         <td>
                             <form action={ deleteUrl } method="post" class="inline pr-4">
-                                <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
                                 <button type="submit">Delete</button>
                             </form>
                             <form action={ updateUrl } method="get">
@@ -134,7 +133,6 @@ templ ModCreateEditBoardComponent(data any) {
         {{ formUrl := fmt.Sprintf("/mod/boards/update/%d", model.EditableBoard.Id)}}
         <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
             <h3>Update Board { model.EditableBoard.Name }</h3>
-            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
             @ModCreateEditBoardForm(data)
             <ul style="padding:0; text-align: center; list-style:none;">
             <li>
@@ -146,7 +144,6 @@ templ ModCreateEditBoardComponent(data any) {
         {{ formUrl := "/mod/boards/create"}}
         <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
             <h3>Create a new board</h3>
-            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
             @ModCreateEditBoardForm(data)
             <ul style="padding:0; text-align: center; list-style:none;">
             <li>
@@ -240,7 +237,6 @@ templ ModCreateEditUserComponent(data any) {
         {{ formUrl := fmt.Sprintf("/mod/users/update/%d", model.EditableUser.Id)}}
         <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
             <h3>Update user { model.EditableUser.Username }</h3>
-            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
             @ModCreateEditUserForm(data)
             <ul style="padding:0; text-align: center; list-style:none;">
             <li>
@@ -252,7 +248,6 @@ templ ModCreateEditUserComponent(data any) {
         {{ formUrl := "/mod/users/create"}}
         <form action={ formUrl } method="post" class="activeform" style="margin-left:auto;margin-right:auto;">
             <h3>Create a new user</h3>
-            <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
             @ModCreateEditUserForm(data)
             <ul style="padding:0; text-align: center; list-style:none;">
             <li>

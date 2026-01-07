@@ -29,7 +29,6 @@ templ navbarOptions(){
 			<a href="/mod">Mod panel</a>
 			<a>
 				<form action="/logout" method="post">
-					<input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
 					<button type="submit">Logout</button>
 				</form>
 			</a>

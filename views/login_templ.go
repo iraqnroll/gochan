@@ -80,20 +80,7 @@ func LoginFormComponent() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header><h1>Login</h1></header><form action method=\"post\" class=\"activeform\"><input class=\"hidden\" name=\"_csrf\" value=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(ctx.Value("gorilla.csrf.Token").(string))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/login.templ`, Line: 18, Col: 85}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><table><tr><th>Username</th><td><input type=\"text\" name=\"username\" size=\"20\" maxlength=\"50\" id=\"username\"></td></tr><tr><th>Password</th><td><input type=\"password\" name=\"password\" size=\"20\" maxlength=\"50\" id=\"password\"></td></tr><tr><td><input type=\"submit\" name=\"login\" value=\"Login\" style=\"text-align: center;\"></td></tr></table></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header><h1>Login</h1></header><form action method=\"post\" class=\"activeform\"><table><tr><th>Username</th><td><input type=\"text\" name=\"username\" size=\"20\" maxlength=\"50\" id=\"username\"></td></tr><tr><th>Password</th><td><input type=\"password\" name=\"password\" size=\"20\" maxlength=\"50\" id=\"password\"></td></tr><tr><td><input type=\"submit\" name=\"login\" value=\"Login\" style=\"text-align: center;\"></td></tr></table></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

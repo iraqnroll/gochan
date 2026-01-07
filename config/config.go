@@ -26,11 +26,8 @@ type (
 	}
 
 	Frontend struct {
-		CsrfKey            string
-		CsrfSecure         bool
-		CsrfTrustedOrigins []string
-		StaticDir          string
-		Enabled            bool
+		StaticDir string
+		Enabled   bool
 	}
 
 	API struct {

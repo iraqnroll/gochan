@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/gorilla/csrf"
 	"github.com/iraqnroll/gochan/cmd/front/handlers"
 	"github.com/iraqnroll/gochan/cmd/front/middlewares"
 	"github.com/iraqnroll/gochan/config"
@@ -63,11 +62,7 @@ func (a *Frontend) Init(cfg *config.Config) {
 
 	a.Router = chi.NewRouter()
 	a.InitServices()
-	a.InitMiddlewares(
-		cfg.Frontend.CsrfKey,
-		cfg.Frontend.CsrfSecure,
-		cfg.Frontend.CsrfTrustedOrigins,
-	)
+	a.InitMiddlewares()
 	a.InitFileServer(cfg.Frontend.StaticDir, "static")
 	a.InitRoutes()
 }
@@ -174,18 +169,10 @@ func (a *Frontend) InitFileServer(path string, workdir string) {
 	})
 }
 
-// TODO: add usermiddleware once i refactor route handlers for frontend
-func (a *Frontend) InitMiddlewares(csrfKey string, csrfSecure bool, trusted_origins []string) {
-	csrfMw := csrf.Protect(
-		[]byte(csrfKey),
-		csrf.Secure(csrfSecure),
-		csrf.TrustedOrigins(trusted_origins),
-		csrf.FieldName("_csrf"),
-	)
-
+// TODO: gorilla.csrf is deprecated, i removed csrf token from all forms, will need to re-implement later...
+func (a *Frontend) InitMiddlewares() {
 	userMw := middlewares.NewUsersMiddleware(a.SessionService)
 
-	a.Router.Use(csrfMw)
 	a.Router.Use(middleware.Logger)
 	a.Router.Use(userMw.SetUser)
 }

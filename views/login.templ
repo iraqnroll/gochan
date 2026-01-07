@@ -15,7 +15,6 @@ templ LoginFormComponent() {
 		<h1>Login</h1>
 	</header>
 	<form action method="post" class="activeform">
-		<input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string)}/>
 		<table>
 			<tr>
 				<th>Username</th>

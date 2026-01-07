@@ -7,12 +7,9 @@ recentpostsnum = 10 #Number of most recent posts (for homepage)
 [frontend]
 enabled = true
 staticdir = "/static"
-csrfkey = "gFvi45R4fy5xNBlnEeZtQbfAVCYEIAUX"
-csrfsecure = false
-csrftrustedorigins = ["gochan.local:3000"]
 
 [database]
-host = "db"
+host = "localhost"
 port = "5432"
 user = "admin"
 password = "changethepassword"
