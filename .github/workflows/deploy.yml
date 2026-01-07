@@ -25,11 +25,8 @@ jobs:
             mkdir -p $DEPLOY_DIR
             cd $DEPLOY_DIR
 
-            echo "Looking for docker-compose.yml..."
-            if [ ! -f docker-compose.yml ]; then
-              echo "docker-compose.yml not found, downloading from repo..."
-              curl -O https://raw.githubusercontent.com/iraqnroll/gochan/main/docker-compose.yml
-            fi
+            echo "Pulling docker-compose.yml from repo..."
+            curl -O https://raw.githubusercontent.com/iraqnroll/gochan/main/docker-compose.yml
             
             echo "Logging into GitHub Packages..."
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
