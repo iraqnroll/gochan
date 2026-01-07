@@ -19,13 +19,15 @@ RUN go build -o gochan main.go
 FROM alpine:latest
 
 # Install certificates and ImageMagick
-RUN apk --no-cache add \
+RUN  echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    &&apk update \
+    apk add --no-cache \
     ca-certificates \
     imagemagick \
     libwebp-tools \
     ttf-freefont \
-    jpeg \
-    png \
+    libjpeg-turbo \
+    libpng \
     ffmpeg
 
 # Create a non-root user and group
