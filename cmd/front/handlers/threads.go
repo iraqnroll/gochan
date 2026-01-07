@@ -55,7 +55,7 @@ func (t Threads) Thread(w http.ResponseWriter, r *http.Request) {
 
 func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	board_uri := chi.URLParam(r, "board_uri")
-	err := r.ParseForm()
+	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -70,7 +70,24 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	//TODO: Add validation before saving the new reply
+	//Validate attached media formats.
+	m := r.MultipartForm
+	files := m.File["file-input"]
+
+	if len(files) > 0 {
+		err, result := t.FileService.CheckForInvalidFileFormats(files)
+		if !result {
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Error(w, "Invalid media formats in attachments.", http.StatusBadRequest)
+			return
+		}
+	}
+
 	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, "", false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -78,8 +95,6 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Handle attached media.
-	m := r.MultipartForm
-	files := m.File["file-input"]
 	attached_media, err := t.FileService.HandleFileUploads(files, board_uri, new_post.ThreadId, new_post.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

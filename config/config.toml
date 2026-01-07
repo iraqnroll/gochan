@@ -2,6 +2,7 @@
 shortname = "Gochan"
 subtitle = "A modern imageboard engine written in Go!"
 recentpostsnum = 10 #Number of most recent posts (for homepage)
+allowedmediatypes = [".jpg", ".jpeg", ".png", ".webp", ".mp4"]
 
 #Optional server-side rendered frontend for gochan
 [frontend]
@@ -9,7 +10,7 @@ enabled = true
 staticdir = "/static"
 
 [database]
-host = "localhost"
+host = "db"
 port = "5432"
 user = "admin"
 password = "changethepassword"

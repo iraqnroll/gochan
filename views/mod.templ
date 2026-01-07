@@ -73,7 +73,6 @@ templ ModRegisteredBoardsListComponent(data any) {
                         <td>{ board.OwnerUsername }</td>
                         <td>
                             <form action="/mod/boards/delete" method="post" class="inline pr-4">
-                                <input class="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
                                 <input class="hidden" name="boardId" value={ board.Id } />
                                 <input class="hidden" name="boardUri" value={ board.Uri }/>
                                 <button type="submit">Delete</button>

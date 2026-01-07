@@ -55,7 +55,7 @@ export function init_file_selector()
         let file_idx = fileInput.files.length;
 
         for (const file of files) {
-            if (file.type.startsWith("image/")) {
+            if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
                 const blobUrl = URL.createObjectURL(file);
                 fileBlobs.push(blobUrl);
 

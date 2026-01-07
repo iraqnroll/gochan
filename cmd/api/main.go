@@ -17,9 +17,9 @@ import (
 )
 
 type Api struct {
-	DB          *sql.DB
-	Router      *chi.Mux
-	ApiSettings *config.API
+	DB       *sql.DB
+	Router   *chi.Mux
+	Settings *config.Config
 
 	BoardService   *services.BoardService
 	PostService    *services.PostService
@@ -56,7 +56,7 @@ func (a *Api) Init(cfg *config.Config) {
 		panic(err)
 	}
 
-	a.ApiSettings = &cfg.Api
+	a.Settings = cfg
 	a.DB = db
 	a.Router = chi.NewRouter()
 
@@ -82,16 +82,16 @@ func (a *Api) InitServices() {
 	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
 	a.PostService = services.NewPostService(pRepo)
-	a.FileService = services.NewFileService()
+	a.FileService = services.NewFileService(a.Settings.Global.AllowedMediaTypes)
 	a.UserService = services.NewUserService(uRepo)
-	a.SessionService = services.NewSessionService(sRepo, a.ApiSettings.SessionTokenSize)
+	a.SessionService = services.NewSessionService(sRepo, a.Settings.Api.SessionTokenSize)
 
 	a.ThreadService = services.NewThreadService(tRepo, a.PostService)
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)
 }
 
 func (a *Api) InitRoutes() {
-	postAPI := &post.API{PostService: a.PostService, Settings: a.ApiSettings}
+	postAPI := &post.API{PostService: a.PostService, Settings: &a.Settings.Api}
 	threadAPI := &thread.API{ThreadService: a.ThreadService}
 	boardAPI := &board.API{BoardService: a.BoardService}
 	userAPI := &user.API{}

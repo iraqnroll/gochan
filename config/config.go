@@ -20,9 +20,10 @@ type (
 	}
 
 	Global struct {
-		Shortname      string
-		Subtitle       string
-		RecentPostsNum int
+		Shortname         string
+		Subtitle          string
+		RecentPostsNum    int
+		AllowedMediaTypes []string
 	}
 
 	Frontend struct {

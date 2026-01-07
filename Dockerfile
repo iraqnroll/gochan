@@ -19,7 +19,14 @@ RUN go build -o gochan main.go
 FROM alpine:latest
 
 # Install certificates and ImageMagick
-RUN apk --no-cache add ca-certificates imagemagick libwebp-tools ttf-freefont
+RUN apk --no-cache add \
+    ca-certificates \
+    imagemagick \
+    libwebp-tools \
+    ttf-freefont \
+    jpeg \
+    png \
+    ffmpeg
 
 # Create a non-root user and group
 RUN addgroup -S gochan && adduser -S gochan -G gochan

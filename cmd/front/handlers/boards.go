@@ -61,7 +61,7 @@ func (b Boards) Board(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -76,7 +76,24 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	//TODO Add validation before saving new thread
+
+	//TODO: Implement validation before saving anything
+	//Validate attached media formats.
+	m := r.MultipartForm
+	files := m.File["file-input"]
+
+	if len(files) > 0 {
+		err, result := b.FileService.CheckForInvalidFileFormats(files)
+		if !result {
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Error(w, "Invalid media formats in attachments.", http.StatusBadRequest)
+			return
+		}
+	}
+
 	new_thread, err := b.ThreadService.CreateThread(
 		model.BoardId,
 		model.Topic,
@@ -89,8 +106,6 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Handle attached media
-	m := r.MultipartForm
-	files := m.File["file-input"]
 	attached_media, err := b.FileService.HandleFileUploads(files, model.BoardUri, new_thread.Id, new_thread.Posts[0].Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

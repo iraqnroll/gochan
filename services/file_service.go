@@ -10,14 +10,16 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 )
 
 type FileService struct {
+	AllowedMediaTypes []string
 }
 
-func NewFileService() *FileService {
-	return &FileService{}
+func NewFileService(allowedMediaTypes []string) *FileService {
+	return &FileService{AllowedMediaTypes: allowedMediaTypes}
 }
 
 // Create a directory to store board-specific static content
@@ -69,6 +71,24 @@ func (fs *FileService) GetBoardBannerUri(board_uri string) (string, error) {
 	return "", nil
 }
 
+// Returns false if any of the attached files has a non-whitelisted file format.
+func (bs *FileService) CheckForInvalidFileFormats(files []*multipart.FileHeader) (error, bool) {
+	for i := range files {
+		file, err := files[i].Open()
+		if err != nil {
+			return err, false
+		}
+		defer file.Close()
+
+		f_ext := path.Ext(files[i].Filename)
+
+		if !slices.Contains(bs.AllowedMediaTypes, f_ext) {
+			return nil, false
+		}
+	}
+	return nil, true
+}
+
 // Handles writing uploaded files to disk and generating thumbnails.
 // TODO: Refactor this garbage, make imagemagick conversion parameters configurable from config.
 func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_uri string, thread_id, post_id int) (string, error) {
@@ -91,22 +111,36 @@ func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_ur
 		if _, err := io.Copy(dst, file); err != nil {
 			return "", err
 		}
+
 		dst.Close()
 
 		//attempt to generate a thumbnail from uploaded src image.
-		//TODO: this will probably get changed once i containerize all dependencies
-		m_cmd := exec.Command("magick", src_fn, "-thumbnail", "200x200", thumb_fn)
-		var stderr bytes.Buffer
-		m_cmd.Stderr = &stderr
-		err = m_cmd.Run()
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		if createFileThumbnails(src_fn, thumb_fn, f_ext) != nil {
 			return "", err
 		}
 
 		result = result + fmt.Sprintf("%d-%d%s;", post_id, i, f_ext)
 	}
 	return result, nil
+}
+
+func createFileThumbnails(src_filename, thumb_filename, file_ext string) error {
+	var m_cmd *exec.Cmd
+	var stderr bytes.Buffer
+
+	if file_ext == ".mp4" {
+		m_cmd = exec.Command("ffmpeg", "-i", src_filename, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-movflags", "+faststart", "-vf", "scale=200:-2", thumb_filename)
+	} else {
+		m_cmd = exec.Command("magick", src_filename, "-thumbnail", "200x200", thumb_filename)
+	}
+	m_cmd.Stderr = &stderr
+	err := m_cmd.Run()
+
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return err
+	}
+	return nil
 }
 
 // Creates directories & returns filepaths for thumbnails and source images that were uploaded for a specific post
