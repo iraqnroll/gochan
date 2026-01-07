@@ -24,8 +24,9 @@ RUN apk --no-cache add ca-certificates imagemagick
 # Create a non-root user and group
 RUN addgroup -S gochan && adduser -S gochan -G gochan
 
-# Create app directory
-RUN mkdir /app && chown gochan:gochan /app
+# Create app directory and set perms
+RUN mkdir -p /app/static/content \
+    && chown -R gochan:gochan /app
 
 # Set working directory
 WORKDIR /app
@@ -43,11 +44,16 @@ COPY migrations /app/migrations
 #Copu config
 COPY config/config.toml /app/config/config.toml
 
+#Copy entrypoint script
+COPY docker-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose port
 EXPOSE 8080
 
 # Switch to non-root user
 USER gochan
 
-# Run the binary
+# Run entrypoint script and then the binary
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["./gochan"]
