@@ -31,7 +31,7 @@ templ BoardThreadSectionComponent(data any) {
     if model, ok := data.(models.BoardViewModel); ok {
         <hr>
         if model.Threads != nil && len(model.Threads) > 0 {
-            for _, thread := range model.Threads[:model.ThreadsPerPage]{
+            for _, thread := range model.Threads {
                 <div class="thread" thread-id={ thread.Id } board-uri={ thread.BoardUri }>
                     {{ opPost := thread.Posts[0] }}
                     {{ threadUrl := fmt.Sprintf("/%s/%d#%d", model.Uri, thread.Id, opPost.Id)}}

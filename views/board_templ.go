@@ -185,7 +185,7 @@ func BoardThreadSectionComponent(data any) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			if model.Threads != nil && len(model.Threads) > 0 {
-				for _, thread := range model.Threads[:model.ThreadsPerPage] {
+				for _, thread := range model.Threads {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"thread\" thread-id=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
