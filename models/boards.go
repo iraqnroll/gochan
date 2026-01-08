@@ -25,7 +25,7 @@ type BoardViewModel struct {
 	Name           string
 	Description    string
 	BannerUrl      string
-	Threads        []ThreadDto
+	Threads        []ThreadViewModel
 	ThreadsPerPage int
 	ErrMsg         string
 }
@@ -37,7 +37,11 @@ func NewBoardViewModel(id, threads_per_page int, uri, name, desc, banner_url str
 	m.Name = name
 	m.Description = desc
 	m.BannerUrl = banner_url
-	m.Threads = threads
+
+	for _, thread := range threads {
+		result := NewThreadsViewModel(thread.Id, 10, banner_url, uri, thread.Topic, thread.Posts[0], thread.Posts[1:], true)
+		m.Threads = append(m.Threads, result)
+	}
 
 	return m
 }

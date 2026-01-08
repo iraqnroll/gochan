@@ -45,7 +45,7 @@ func (b Boards) Board(w http.ResponseWriter, r *http.Request) {
 
 	banner_uri, err := b.FileService.GetBoardBannerUri(board.Uri)
 	if err != nil {
-		fmt.Printf("Failed to retrieve board banner : %s", err.Error())
+		fmt.Printf("Failed to retrieve board banner : %s \n", err.Error())
 	}
 
 	b.ParentPage.ChildViewModel = models.NewBoardViewModel(

@@ -183,13 +183,15 @@ func ThreadSectionComponent(data any) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = OPPostComponent(model.OPPost, model.Topic, "", model.BoardUri, model.Id).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = PostComponent(model.OPPost, model.BoardUri, "", "post op", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = PostSectionComponent(model.Replies, model.BoardUri).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
+			for _, reply := range model.Replies {
+				templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, "", "post reply", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><hr>")
 			if templ_7745c5c3_Err != nil {

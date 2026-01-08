@@ -28,8 +28,10 @@ templ ThreadSectionComponent(data any) {
     if model, ok := data.(models.ThreadViewModel); ok {
         <hr>
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
-            @OPPostComponent(model.OPPost, model.Topic, "", model.BoardUri, model.Id)
-            @PostSectionComponent(model.Replies, model.BoardUri)
+            @PostComponent(model.OPPost, model.BoardUri, "", "post op", model.BoardView)
+            for _, reply := range model.Replies {
+                @PostComponent(reply, model.BoardUri, "", "post reply", model.BoardView)
+            }
         </div>
         <hr>
     }

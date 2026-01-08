@@ -49,7 +49,7 @@ func (t Threads) Thread(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve board banner : %s", err.Error())
 	}
 
-	t.ParentPage.ChildViewModel = models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:])
+	t.ParentPage.ChildViewModel = models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:], false)
 	views.Thread(t.ParentPage).Render(r.Context(), w)
 }
 

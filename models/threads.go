@@ -17,10 +17,11 @@ type ThreadViewModel struct {
 	Replies      []PostDto
 	PostsPerPage int
 	BoardUri     string
+	BoardView    bool
 	ErrMsg       string
 }
 
-func NewThreadsViewModel(id, postsPerPage int, bannerUrl, board_uri, topic string, op_post PostDto, replies []PostDto) (t ThreadViewModel) {
+func NewThreadsViewModel(id, postsPerPage int, bannerUrl, board_uri, topic string, op_post PostDto, replies []PostDto, boardview bool) (t ThreadViewModel) {
 	t.Id = id
 	t.BannerUrl = bannerUrl
 	t.OPPost = op_post
@@ -28,6 +29,7 @@ func NewThreadsViewModel(id, postsPerPage int, bannerUrl, board_uri, topic strin
 	t.PostsPerPage = postsPerPage
 	t.BoardUri = board_uri
 	t.Topic = topic
+	t.BoardView = boardview
 
 	return t
 }

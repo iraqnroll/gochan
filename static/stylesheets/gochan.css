@@ -255,6 +255,11 @@ input[type="text"], input[type="password"], textarea {
     display: none;
 }
 
+.thread {
+    display:inline-flex;
+    flex-direction: column;
+}
+
 div.post.op {
     margin-right: 20pt;
     margin-bottom: 5pt;
@@ -263,6 +268,8 @@ div.post.op {
 
 div.post {
     padding-left: 20pt;
+    display: inline-flex;
+    flex-direction: column;
 }
 
 div.post div.postContent {
@@ -298,8 +305,13 @@ div.post.reply {
     padding: 0.2em 0.3em 0.5em 0.6em;
     border-width: 1pt;
     border-style: none solid solid none;
-    display:inline-block;
-    max-width: 90% !important;
+}
+
+.post.reply img,
+.post.reply video {
+    float: left;
+    margin-right: 1em;
+    max-height: 200px;
 }
 
 div.post.reply div.body {
@@ -316,6 +328,7 @@ div.post div.body {
     padding-bottom: 0.3em;
     word-wrap: break-word;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 
 hr {
@@ -409,9 +422,11 @@ img {
 
 .file {
     margin-right: 2px;
-    min-width: 200px;
     padding-bottom: 10px;
     float: left;
+}
+.file p {
+    margin: 1px;
 }
 
 .fileinfo a {
