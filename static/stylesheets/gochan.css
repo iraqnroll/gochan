@@ -256,26 +256,18 @@ input[type="text"], input[type="password"], textarea {
 }
 
 .thread {
-    display:inline-flex;
-    flex-direction: column;
+    display:block;
 }
 
 div.post.op {
     margin-right: 20pt;
     margin-bottom: 5pt;
-    clear:left;
+    display: block;
 }
 
 div.post {
     padding-left: 20pt;
-    display: inline-flex;
-    flex-direction: column;
-}
-
-div.post div.postContent {
-    clear: none;
-    word-wrap: break-word;
-    white-space: pre-wrap;
+    display: block;
 }
 
 span.topic {
@@ -298,6 +290,11 @@ span.postId {
     color: inherit;
 }
 
+div.reply-container {
+    display:block;
+    width: 100%;
+}
+
 div.post.reply {
     background: #f0e0d6;
     border-color: #d9bfb7;
@@ -305,20 +302,47 @@ div.post.reply {
     padding: 0.2em 0.3em 0.5em 0.6em;
     border-width: 1pt;
     border-style: none solid solid none;
+    display:inline-block;
+    min-width: 30%;
 }
 
 .post.reply img,
 .post.reply video {
-    float: left;
     margin-right: 1em;
-    max-height: 200px;
+    max-height: 150px;
+}
+
+.post div.content {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.post div.content:has(.files-multiple) {
+    display: flex;
+    flex-direction: column;
+}
+
+.post.op .post-image {
+    float: left;
+    margin: 0 16px 8px 0;
+    max-width: 150px;
+}
+
+div.op-content {
+    margin-left: 1.8em;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 div.post.reply div.body {
     margin-left: 1.8em;
-    margin-top: 0.8em;
+    margin-top: 1.8em;
     padding-right: 1.8em;
     padding-bottom: 0.3em;
+    font-size: 16px;
 }
 
 div.post div.body {
@@ -329,6 +353,7 @@ div.post div.body {
     word-wrap: break-word;
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    font-size: 16px;
 }
 
 hr {
@@ -423,7 +448,6 @@ img {
 .file {
     margin-right: 2px;
     padding-bottom: 10px;
-    float: left;
 }
 .file p {
     margin: 1px;
@@ -431,4 +455,9 @@ img {
 
 .fileinfo a {
     color: #0000ff;
+}
+
+.files-multiple {
+    display: flex;
+    flex-direction: row;
 }

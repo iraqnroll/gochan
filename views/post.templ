@@ -117,28 +117,33 @@ templ NewThreadOrReplyComponent(data any) {
 }
 
 templ PostComponent(post models.PostDto, board_uri, thread_url, post_class string, boardView bool) {
-    <div class={ post_class }>
-        if post_class == "post op" {
+    if post_class == "post op" {
+        <div class={ post_class }>
             if post.HasMedia != "" {
                 @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
             }
-            @PostIntroComponent(post, boardView, board_uri)
-            @PostBodyComponent(post.Content)
-        } else {
-            @PostIntroComponent(post, boardView, board_uri)
-            <div class="content">
-                if post.HasMedia != "" {
-                    @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
-                }
+            <div class="op-content">
+                @PostIntroComponent(post, boardView, board_uri)
                 @PostBodyComponent(post.Content)
             </div>
-        }
-    </div>
+        </div>
+    } else {
+        <div class="reply-container">
+            <div class={ post_class }>
+                @PostIntroComponent(post, false, board_uri)
+                <div class="content">
+                    if post.HasMedia != "" {
+                        @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
+                    }
+                    @PostBodyComponent(post.Content)
+                </div>
+            </div>
+        </div>
+    }
 }
 
 templ PostIntroComponent(post models.PostDto, boardView bool, board_uri string) {
     {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
-    <div class="content">
         <p class="intro">
             <span class="identifier">{ post.Identifier }</span>
             <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
@@ -148,7 +153,6 @@ templ PostIntroComponent(post models.PostDto, boardView bool, board_uri string) 
                 <a href={ replyUrl }>View</a>
             }
         </p>
-    </div>
 }
 
 templ PostBodyComponent(content string) {
@@ -157,11 +161,18 @@ templ PostBodyComponent(content string) {
 
 templ PostAttachmentsComponent(board_uri, post_files string, thread_id int) {
     {{ files := SplitStringBy(post_files, ';') }}
-    <div class="files">
-        for _, file := range(files) {
-            @PostFileComponent(board_uri, file, thread_id)
-        }
-    </div>
+    {{ count := len(files)}}
+    if count > 1 {
+        <div class="files-multiple">
+            for _, file := range(files) {
+                @PostFileComponent(board_uri, file, thread_id)
+            }
+        </div>
+    } else {
+        <div class="files">
+            @PostFileComponent(board_uri, files[0], thread_id)
+        </div>   
+    }
 }
 
 //TODO: Implement more file info (size, dimensions, original filename, we'd want to save them next to the post on processing)
@@ -180,97 +191,16 @@ templ PostFileComponent(board_uri, file string, thread_id int) {
             if format == ".mp4" {
                 <video
                     src={ thmbUrl}
-                    width="200"
+                    width="150"
+                    height="150"
                     type="video/mp4"
                     loop
                     muted
                     autoplay
                     playsinline/>
             } else {
-                <img class="post-image" src={ thmbUrl } style="width:200px; height:200px" loading="lazy">
+                <img class="post-image" src={ thmbUrl } style="width:150px; height:150px" loading="lazy">
             }
         </a>
     </div>
-}
-
-templ PostSectionComponent(posts []models.PostDto, board_uri string) {
-    for _, post := range posts {
-        {{ postNo := fmt.Sprintf("No.%d", post.Id)}}
-        <br>
-        <div class="post reply" id={ post.Id }>
-            <p class="intro">
-                <span class="identifier">{ post.Identifier }</span>
-                <time datetime={ post.PostTimestamp }>{ post.PostTimestamp }</time>
-                <span class="postId">{ postNo }</span>
-            </p>
-            <div class="content">
-                if post.HasMedia != "" {
-                    {{ files := SplitStringBy(post.HasMedia, ';') }}
-                    <div class="files">
-                        for _, file := range(files) {
-                            {{ srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, post.ThreadId, file)}}
-                            {{ thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, post.ThreadId, file)}}
-                            {{ format := path.Ext(file)}}
-                            <div class="file">
-                                <p style="font-size:10px" class="fileinfo">
-                                    <a href= { srcUrl }>{ file }</a>
-                                </p>
-                                <a href={ srcUrl } target="_blank">
-                                    if format == ".mp4" {
-                                        <video
-                                            src={ thmbUrl}
-                                            width="200"
-                                            type="video/mp4"
-                                            loop
-                                            muted
-                                            autoplay
-                                            playsinline/>
-                                    } else {
-                                        <img class="post-image" src={ thmbUrl } style="width:200px; height:200px" loading="lazy">
-                                    }
-                                </a>
-                            </div>
-                        }
-                    </div>
-                }
-                <div class="body">{ post.Content }</div>
-            </div>
-        </div>
-    }
-}
-
-templ OPPostComponent(op_post models.PostDto, topic, reply_uri, board_uri string, thread_id int) {
-    {{ postNo := fmt.Sprintf("No.%d", op_post.Id)}}
-    <div class="post op" id= { op_post.Id }>
-        <p class="intro">
-            <span class="topic">{ topic }</span>
-            <span class="identifier">{ op_post.Identifier }</span>
-            <time datetime={ op_post.PostTimestamp }> { op_post.PostTimestamp } </time>
-            <span class="postId">{ postNo }</span>
-        </p>
-        if reply_uri != "" {
-            <a href={ reply_uri }>Reply</a>
-        }
-        <div class="content">
-            if op_post.HasMedia != "" {
-                {{ files := SplitStringBy(op_post.HasMedia, ';') }}
-                <div class="file">
-                    for _, file := range(files) {
-                        {{ srcUrl := fmt.Sprintf("/static/content/%s/src/%d/%s", board_uri, thread_id, file)}}
-                        {{ thmbUrl := fmt.Sprintf("/static/content/%s/thumbs/%d/%s", board_uri, thread_id, file)}}
-                        <div class="file">
-                            <p style="font-size:10pt" class="fileinfo">
-                                <a href= { srcUrl }>{ file }</a>
-                            </p>
-                            <a href={ srcUrl } target="_blank">
-                                <img class="post-image" src={ thmbUrl } style="width:200px; height:200px" loading="lazy">
-                            </a>
-                        </div>
-                    }
-                </div>
-            }
-            <div class="postContent">{ op_post.Content }</div>
-        </div>
-    </div>
-    <br>
 }
