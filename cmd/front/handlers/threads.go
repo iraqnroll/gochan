@@ -10,6 +10,7 @@ import (
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/services"
 	"github.com/iraqnroll/gochan/views"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type Threads struct {
@@ -18,14 +19,16 @@ type Threads struct {
 	FileService   *services.FileService
 	PostsPerPage  int
 	ParentPage    models.ParentPageData
+	PostPolicy    *bluemonday.Policy
 }
 
-func NewThreadsHandler(threadSvc *services.ThreadService, postSvc *services.PostService, fileSvc *services.FileService, parentPage models.ParentPageData, postsPerPage int) (t Threads) {
+func NewThreadsHandler(threadSvc *services.ThreadService, postSvc *services.PostService, fileSvc *services.FileService, parentPage models.ParentPageData, postsPerPage int, pPol *bluemonday.Policy) (t Threads) {
 	t.ThreadService = threadSvc
 	t.PostService = postSvc
 	t.FileService = fileSvc
 	t.ParentPage = parentPage
 	t.PostsPerPage = postsPerPage
+	t.PostPolicy = pPol
 
 	return t
 }
@@ -49,7 +52,12 @@ func (t Threads) Thread(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve board banner : %s", err.Error())
 	}
 
-	t.ParentPage.ChildViewModel = models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:], false)
+	test := models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:], false, t.PostPolicy)
+	t.ParentPage.ChildViewModel = test
+	for _, post := range test.Replies {
+		fmt.Println(post.Content)
+	}
+
 	views.Thread(t.ParentPage).Render(r.Context(), w)
 }
 
@@ -101,7 +109,6 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Saved attached media for post Id %d : %s", new_post.Id, attached_media)
 	err = t.ThreadService.UpdateAttachedMedia(new_post.Id, attached_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

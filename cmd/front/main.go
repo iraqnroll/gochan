@@ -17,13 +17,15 @@ import (
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/repos"
 	"github.com/iraqnroll/gochan/services"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pressly/goose"
 )
 
 type Frontend struct {
-	DB       *sql.DB
-	Router   *chi.Mux
-	Settings *config.Config
+	DB         *sql.DB
+	Router     *chi.Mux
+	Settings   *config.Config
+	PostPolicy *bluemonday.Policy
 
 	BoardService   *services.BoardService
 	PostService    *services.PostService
@@ -90,6 +92,10 @@ func (a *Frontend) InitServices() {
 
 	a.ThreadService = services.NewThreadService(tRepo, a.PostService)
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)
+
+	//Initialize policies to sanitize user posts.
+	a.PostPolicy = bluemonday.UGCPolicy()
+	a.PostPolicy.AllowStandardURLs()
 }
 
 // TODO: Implement caching of viewmodels/global page data
@@ -101,8 +107,8 @@ func (a *Frontend) InitRoutes() {
 		Subtitle:  a.Settings.Global.Subtitle}
 
 	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
-	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10)
-	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
+	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10, a.PostPolicy)
+	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50, a.PostPolicy)
 	usersHandler := handlers.NewUsersHandler(a.UserService, a.SessionService, parentPageData)
 	modHandler := handlers.NewModHandler(a.UserService, a.BoardService, a.ThreadService, a.FileService, parentPageData)
 

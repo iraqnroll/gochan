@@ -1,5 +1,12 @@
 package models
 
+import (
+	"bytes"
+
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/yuin/goldmark"
+)
+
 type PostDto struct {
 	Id            int    `json:"id"`
 	ThreadId      int    `json:"thread_id"`
@@ -20,4 +27,15 @@ type RecentPostsDto struct {
 	Post_content   string `json:"post_content"`
 	Post_timestamp string `json:"post_timestamp"`
 	HasMedia       string
+}
+
+func RenderSafeMarkdown(md string, pPol *bluemonday.Policy) (string, error) {
+	var buf bytes.Buffer
+	if err := goldmark.Convert([]byte(md), &buf); err != nil {
+		return "", err
+	}
+
+	safe := pPol.SanitizeBytes(buf.Bytes())
+	//fmt.Println(test)
+	return string(safe), nil
 }

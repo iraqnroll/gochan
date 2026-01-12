@@ -10,6 +10,7 @@ import (
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/services"
 	"github.com/iraqnroll/gochan/views"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type Boards struct {
@@ -18,14 +19,16 @@ type Boards struct {
 	FileService    *services.FileService
 	ThreadsPerPage int
 	ParentPage     models.ParentPageData
+	PostPolicy     *bluemonday.Policy
 }
 
-func NewBoardsHandler(boardSvc *services.BoardService, threadSvc *services.ThreadService, fileSvc *services.FileService, parentPage models.ParentPageData, threadsPerPage int) (b Boards) {
+func NewBoardsHandler(boardSvc *services.BoardService, threadSvc *services.ThreadService, fileSvc *services.FileService, parentPage models.ParentPageData, threadsPerPage int, pPol *bluemonday.Policy) (b Boards) {
 	b.BoardService = boardSvc
 	b.ThreadService = threadSvc
 	b.FileService = fileSvc
 	b.ThreadsPerPage = threadsPerPage
 	b.ParentPage = parentPage
+	b.PostPolicy = pPol
 
 	return b
 }
@@ -55,7 +58,8 @@ func (b Boards) Board(w http.ResponseWriter, r *http.Request) {
 		board.Name,
 		board.Description,
 		banner_uri,
-		board.Threads)
+		board.Threads,
+		b.PostPolicy)
 
 	views.Board(b.ParentPage).Render(r.Context(), w)
 }

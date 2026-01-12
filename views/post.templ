@@ -156,7 +156,7 @@ templ PostIntroComponent(post models.PostDto, boardView bool, board_uri string) 
 }
 
 templ PostBodyComponent(content string) {
-    <div class="body">{ content }</div>
+    <div class="body">@templ.Raw(content)</div>
 }
 
 templ PostAttachmentsComponent(board_uri, post_files string, thread_id int) {
