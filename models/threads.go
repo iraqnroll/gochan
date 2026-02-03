@@ -39,7 +39,7 @@ func NewThreadsViewModel(id, postsPerPage int, bannerUrl, board_uri, topic strin
 	//TODO: Implement error handling here
 	t.OPPost.Content, _ = RenderSafeMarkdown(t.OPPost.Content, pPol)
 
-	for i, _ := range t.Replies {
+	for i := range t.Replies {
 		t.Replies[i].Content, _ = RenderSafeMarkdown(t.Replies[i].Content, pPol)
 	}
 

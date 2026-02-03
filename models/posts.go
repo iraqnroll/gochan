@@ -3,8 +3,13 @@ package models
 import (
 	"bytes"
 
+	mdextensions "github.com/iraqnroll/gochan/md_extensions"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/util"
 )
 
 type PostDto struct {
@@ -29,13 +34,49 @@ type RecentPostsDto struct {
 	HasMedia       string
 }
 
+func getMarkdownParser() goldmark.Markdown {
+	p := parser.NewParser(
+		parser.WithBlockParsers(
+			util.Prioritized(&mdextensions.GochanBlockRefParser{}, 50),
+			util.Prioritized(&mdextensions.GochanGreentextParser{}, 50),
+			util.Prioritized(parser.NewCodeBlockParser(), 60),
+			util.Prioritized(parser.NewFencedCodeBlockParser(), 60),
+			util.Prioritized(parser.NewParagraphParser(), 100),
+		),
+		parser.WithInlineParsers(
+			util.Prioritized(parser.NewCodeSpanParser(), 70),
+			util.Prioritized(&mdextensions.GochanInlineRefParser{}, 100),
+		),
+	)
+
+	r := renderer.NewRenderer(
+		renderer.WithNodeRenderers(
+			util.Prioritized(html.NewRenderer(), 100),
+			util.Prioritized(&mdextensions.GochanHTMLRenderer{}, 500),
+		),
+	)
+
+	return goldmark.New(
+		goldmark.WithParser(p),
+		goldmark.WithRenderer(r),
+		goldmark.WithExtensions(mdextensions.New()),
+	)
+}
+
 func RenderSafeMarkdown(md string, pPol *bluemonday.Policy) (string, error) {
 	var buf bytes.Buffer
-	if err := goldmark.Convert([]byte(md), &buf); err != nil {
+	//TODO: Im not sure if creating a new goldmark object on each render is a good idea lol
+	// gm := goldmark.New(
+	// 	goldmark.WithExtensions(
+	// 		mdextensions.New(),
+	// 	),
+	// )
+
+	if err := getMarkdownParser().Convert([]byte(md), &buf); err != nil {
 		return "", err
 	}
 
 	safe := pPol.SanitizeBytes(buf.Bytes())
-	//fmt.Println(test)
+
 	return string(safe), nil
 }

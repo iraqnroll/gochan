@@ -96,6 +96,9 @@ func (a *Frontend) InitServices() {
 	//Initialize policies to sanitize user posts.
 	a.PostPolicy = bluemonday.UGCPolicy()
 	a.PostPolicy.AllowStandardURLs()
+	a.PostPolicy.AllowElements("a", "pre", "code")
+	a.PostPolicy.AllowAttrs("class").OnElements("span")
+	a.PostPolicy.AllowAttrs("href").OnElements("a")
 }
 
 // TODO: Implement caching of viewmodels/global page data

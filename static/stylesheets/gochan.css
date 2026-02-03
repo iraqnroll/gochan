@@ -461,3 +461,21 @@ img {
     display: flex;
     flex-direction: row;
 }
+
+.greentext {
+	color: #789922;
+}
+
+.post-ref {
+	color: #d3869b;
+	cursor: pointer;
+}
+
+pre:has(code), p:has(code){
+    background:hsla(12, 67%, 66%, 0.5);
+}
+
+code {
+    font-family: monospace;
+    font-size: 12px;
+}

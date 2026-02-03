@@ -117,8 +117,9 @@ templ NewThreadOrReplyComponent(data any) {
 }
 
 templ PostComponent(post models.PostDto, board_uri, thread_url, post_class string, boardView bool) {
+    {{ postId := fmt.Sprintf("%d", post.Id)}}
     if post_class == "post op" {
-        <div class={ post_class }>
+        <div class={ post_class } id={ postId }>
             if post.HasMedia != "" {
                 @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
             }
@@ -129,7 +130,7 @@ templ PostComponent(post models.PostDto, board_uri, thread_url, post_class strin
         </div>
     } else {
         <div class="reply-container">
-            <div class={ post_class }>
+            <div class={ post_class } id={ postId }>
                 @PostIntroComponent(post, false, board_uri)
                 <div class="content">
                     if post.HasMedia != "" {
