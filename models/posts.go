@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"sync"
 
 	mdextensions "github.com/iraqnroll/gochan/md_extensions"
 	"github.com/microcosm-cc/bluemonday"
@@ -34,7 +35,7 @@ type RecentPostsDto struct {
 	HasMedia       string
 }
 
-func getMarkdownParser() goldmark.Markdown {
+var getMarkdownParser = sync.OnceValue(func() goldmark.Markdown {
 	p := parser.NewParser(
 		parser.WithBlockParsers(
 			util.Prioritized(&mdextensions.GochanBlockRefParser{}, 50),
@@ -61,21 +62,13 @@ func getMarkdownParser() goldmark.Markdown {
 		goldmark.WithRenderer(r),
 		goldmark.WithExtensions(mdextensions.New()),
 	)
-}
+})
 
 func RenderSafeMarkdown(md string, pPol *bluemonday.Policy) (string, error) {
 	var buf bytes.Buffer
-	//TODO: Im not sure if creating a new goldmark object on each render is a good idea lol
-	// gm := goldmark.New(
-	// 	goldmark.WithExtensions(
-	// 		mdextensions.New(),
-	// 	),
-	// )
-
 	if err := getMarkdownParser().Convert([]byte(md), &buf); err != nil {
 		return "", err
 	}
-
 	safe := pPol.SanitizeBytes(buf.Bytes())
 
 	return string(safe), nil
