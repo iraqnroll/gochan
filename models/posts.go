@@ -38,7 +38,6 @@ type RecentPostsDto struct {
 var getMarkdownParser = sync.OnceValue(func() goldmark.Markdown {
 	p := parser.NewParser(
 		parser.WithBlockParsers(
-			util.Prioritized(&mdextensions.GochanBlockRefParser{}, 50),
 			util.Prioritized(&mdextensions.GochanGreentextParser{}, 50),
 			util.Prioritized(parser.NewCodeBlockParser(), 60),
 			util.Prioritized(parser.NewFencedCodeBlockParser(), 60),

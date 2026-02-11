@@ -10,7 +10,6 @@ type GochanHTMLRenderer struct{}
 
 func (r *GochanHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(KindPostRef, r.renderPostRef)
-	reg.Register(KindPostRefBlock, r.renderPostRefBlock)
 	reg.Register(KindGreentext, r.renderGreentext)
 }
 
@@ -54,30 +53,6 @@ func (r *GochanHTMLRenderer) renderGreentext(
 		w.Write(line)
 	}
 	w.WriteString(`</span>`)
-
-	return ast.WalkSkipChildren, nil
-}
-
-func (r *GochanHTMLRenderer) renderPostRefBlock(
-	w util.BufWriter,
-	source []byte,
-	node ast.Node,
-	entering bool,
-) (ast.WalkStatus, error) {
-
-	if !entering {
-		return ast.WalkContinue, nil
-	}
-
-	n := node.(*PostRefBlock)
-
-	for _, line := range n.PostRefLines {
-		w.WriteString(`<a href="#`)
-		w.Write(line)
-		w.WriteString(`"><span class="post-ref">&gt;&gt;`)
-		w.Write(line)
-		w.WriteString(`</span></a>`)
-	}
 
 	return ast.WalkSkipChildren, nil
 }
