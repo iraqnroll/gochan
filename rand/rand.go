@@ -2,7 +2,9 @@ package rand
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -26,4 +28,10 @@ func String(n int) (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func GenerateFingerprint(ip, salt string) string {
+	data := ip + salt
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])[:16]
 }

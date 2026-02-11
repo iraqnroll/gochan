@@ -20,6 +20,8 @@ type PostDto struct {
 	Content       string `json:"content"`
 	PostTimestamp string `json:"post_timestamp"`
 	IsOP          bool   `json:"is_op"`
+	Post_fprint   string `json:"post_fprint"`
+	OgMedia       string
 	HasMedia      string
 }
 

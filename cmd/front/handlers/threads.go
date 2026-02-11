@@ -74,6 +74,7 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	model.Post_fprint, _ = ReadCookie(r, UserFingerprint)
 
 	//TODO: Add validation before saving the new reply
 	//Validate attached media formats.
@@ -92,7 +93,7 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, "", false)
+	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, model.Post_fprint, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -104,8 +105,9 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	og_media := t.FileService.GetFilenames(files)
 
-	err = t.ThreadService.UpdateAttachedMedia(new_post.Id, attached_media)
+	err = t.ThreadService.UpdateAttachedMedia(new_post.Id, attached_media, og_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -81,6 +81,8 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	model.Posts[0].Post_fprint, _ = ReadCookie(r, UserFingerprint)
+
 	//TODO: Implement validation before saving anything
 	//Validate attached media formats.
 	m := r.MultipartForm
@@ -103,7 +105,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		model.Topic,
 		model.Posts[0].Identifier,
 		model.Posts[0].Content,
-		"")
+		model.Posts[0].Post_fprint)
 	if err != nil {
 		fmt.Printf("Failed to create a new thread : %s", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -115,7 +117,9 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = b.ThreadService.UpdateAttachedMedia(new_thread.Posts[0].Id, attached_media)
+	og_media := b.FileService.GetFilenames(files)
+
+	err = b.ThreadService.UpdateAttachedMedia(new_thread.Posts[0].Id, attached_media, og_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -30,8 +30,8 @@ const (
 		FROM recent_posts
 		ORDER BY post_timestamp DESC
 		LIMIT $1`
-	p_create_new_query   = `INSERT INTO posts(thread_id, identifier, content, is_op, has_media) VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	p_update_media_query = `UPDATE posts SET has_media = $2 WHERE id = $1`
+	p_create_new_query   = `INSERT INTO posts(thread_id, identifier, content, is_op, fingerprint) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+	p_update_media_query = `UPDATE posts SET has_media = $2, og_media = $3 WHERE id = $1`
 )
 
 type PostgresPostRepository struct {
@@ -45,9 +45,9 @@ func NewPostgresPostRepository(db *sql.DB) *PostgresPostRepository {
 
 	return &PostgresPostRepository{db: db}
 }
-func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error) {
-	result := models.PostDto{ThreadId: thread_id, Identifier: identifier, Content: content, IsOP: is_op, HasMedia: has_media}
-	row := r.db.QueryRow(p_create_new_query, result.ThreadId, result.Identifier, result.Content, result.IsOP, result.HasMedia)
+func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error) {
+	result := models.PostDto{ThreadId: thread_id, Identifier: identifier, Content: content, IsOP: is_op, Post_fprint: fingerprint}
+	row := r.db.QueryRow(p_create_new_query, result.ThreadId, result.Identifier, result.Content, result.IsOP, result.Post_fprint)
 	err := row.Scan(&result.Id)
 	if err != nil {
 		return result, fmt.Errorf("PostgresPostRepository.CreateNew error : %w", err)
@@ -102,7 +102,7 @@ func (r *PostgresPostRepository) GetMostRecent(num_of_posts int) ([]models.Recen
 	return result, nil
 }
 
-func (r *PostgresPostRepository) UpdateAttachedMedia(post_id int, attached_media string) error {
-	_, err := r.db.Exec(p_update_media_query, post_id, attached_media)
+func (r *PostgresPostRepository) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
+	_, err := r.db.Exec(p_update_media_query, post_id, attached_media, original_media)
 	return err
 }

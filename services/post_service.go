@@ -8,9 +8,9 @@ import (
 
 type PostRepository interface {
 	GetAllByThread(thread_id int) ([]models.PostDto, error)
-	CreateNew(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
+	CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
-	UpdateAttachedMedia(post_id int, attached_media string) error
+	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 }
 
 type PostService struct {
@@ -22,8 +22,8 @@ func NewPostService(repo PostRepository) *PostService {
 }
 
 // Creates a post in a specific thread
-func (ps *PostService) CreatePost(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error) {
-	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, has_media, is_op)
+func (ps *PostService) CreatePost(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error) {
+	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, fingerprint, is_op)
 	if err != nil {
 		return post, fmt.Errorf("PostService.CreateReply failed : %w", err)
 	}
@@ -50,6 +50,7 @@ func (ps *PostService) GetMostRecent(num_of_posts int) ([]models.RecentPostsDto,
 	return posts, nil
 }
 
-func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media string) error {
-	return ps.PostRepo.UpdateAttachedMedia(post_id, attached_media)
+// TODO: Maybe split this into a separate service ? right now thread service wraps this
+func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
+	return ps.PostRepo.UpdateAttachedMedia(post_id, attached_media, original_media)
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/iraqnroll/gochan/models"
 )
 
-type key string
+type uKey string
 
 const (
-	userKey key = "user"
+	userKey uKey = "user"
 )
 
 func WithUser(ctx context.Context, user *models.User) context.Context {

@@ -123,10 +123,10 @@ func (a *Frontend) InitRoutes() {
 		r.Post("/logout", usersHandler.Logout)
 
 		r.Get("/{board_uri}", boardHandler.Board)
-		r.Post("/{board_uri}", boardHandler.NewThread)
+		r.With(middlewares.RequireFingerprint).Post("/{board_uri}", boardHandler.NewThread)
 
 		r.Get("/{board_uri}/{thread_id}", threadHandler.Thread)
-		r.Post("/{board_uri}/{thread_id}", threadHandler.Reply)
+		r.With(middlewares.RequireFingerprint).Post("/{board_uri}/{thread_id}", threadHandler.Reply)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Page not found.", http.StatusNotFound)
@@ -184,4 +184,5 @@ func (a *Frontend) InitMiddlewares() {
 
 	a.Router.Use(middleware.Logger)
 	a.Router.Use(userMw.SetUser)
+	a.Router.Use(middlewares.SetFingerprint)
 }

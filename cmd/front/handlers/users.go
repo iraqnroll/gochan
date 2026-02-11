@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	CookieSession = "gochan.session"
+	CookieSession   = "gochan.session"
+	UserFingerprint = "gochan.fingerprint"
 )
 
 type Users struct {

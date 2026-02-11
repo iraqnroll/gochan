@@ -89,6 +89,20 @@ func (bs *FileService) CheckForInvalidFileFormats(files []*multipart.FileHeader)
 	return nil, true
 }
 
+func (bs *FileService) GetFilenames(files []*multipart.FileHeader) string {
+	var result string
+	for i := range files {
+		file, err := files[i].Open()
+		if err != nil {
+			continue
+		}
+		defer file.Close()
+
+		result += files[i].Filename + ";"
+	}
+	return result
+}
+
 // Handles writing uploaded files to disk and generating thumbnails.
 // TODO: Refactor this garbage, make imagemagick conversion parameters configurable from config.
 func (bs *FileService) HandleFileUploads(files []*multipart.FileHeader, board_uri string, thread_id, post_id int) (string, error) {

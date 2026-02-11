@@ -13,9 +13,9 @@ type ThreadRepository interface {
 }
 
 type IPostService interface {
-	CreatePost(thread_id int, identifier, content, has_media string, is_op bool) (models.PostDto, error)
+	CreatePost(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
 	GetThreadPosts(thread_id int) ([]models.PostDto, error)
-	UpdateAttachedMedia(post_id int, attached_media string) error
+	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 }
 
 type ThreadService struct {
@@ -28,14 +28,14 @@ func NewThreadService(repo ThreadRepository, postService IPostService) *ThreadSe
 }
 
 // Creates a new thread in the specified board with a OP post.
-func (ts *ThreadService) CreateThread(board_id int, topic, identifier, content, has_media string) (*models.ThreadDto, error) {
+func (ts *ThreadService) CreateThread(board_id int, topic, identifier, content, fingerprint string) (*models.ThreadDto, error) {
 	result, err := ts.threadRepo.CreateNew(board_id, topic)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.CreateThread failed while creating a new thread : %w", err)
 	}
 
 	//New thread created, create and attach the OP post to it.
-	post, err := ts.postService.CreatePost(result.Id, identifier, content, has_media, true)
+	post, err := ts.postService.CreatePost(result.Id, identifier, content, fingerprint, true)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.CreateThread failed while creating a new thread : %w", err)
 	}
@@ -95,6 +95,6 @@ func (ts *ThreadService) SortPostsIntoThreads(threads []models.ThreadDto, posts 
 	}
 }
 
-func (ts *ThreadService) UpdateAttachedMedia(post_id int, attached_media string) error {
-	return ts.postService.UpdateAttachedMedia(post_id, attached_media)
+func (ts *ThreadService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
+	return ts.postService.UpdateAttachedMedia(post_id, attached_media, original_media)
 }
