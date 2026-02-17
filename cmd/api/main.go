@@ -81,7 +81,7 @@ func (a *Api) InitServices() {
 	uRepo := repos.NewPostgresUserRepository(a.DB)
 	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
-	a.PostService = services.NewPostService(pRepo)
+	a.PostService = services.NewPostService(pRepo, a.Settings.Global.FingerprintSalt)
 	a.FileService = services.NewFileService(a.Settings.Global.AllowedMediaTypes)
 	a.UserService = services.NewUserService(uRepo)
 	a.SessionService = services.NewSessionService(sRepo, a.Settings.Api.SessionTokenSize)

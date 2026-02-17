@@ -74,7 +74,6 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	model.Post_fprint, _ = ReadCookie(r, UserFingerprint)
 
 	//TODO: Add validation before saving the new reply
 	//Validate attached media formats.
@@ -92,6 +91,9 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	//Generate fingerprint
+	model.Post_fprint = t.PostService.GenerateFingerprint(GetClientIp(r))
 
 	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, model.Post_fprint, false)
 	if err != nil {

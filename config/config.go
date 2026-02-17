@@ -24,6 +24,7 @@ type (
 		Subtitle          string
 		RecentPostsNum    int
 		AllowedMediaTypes []string
+		FingerprintSalt   string
 	}
 
 	Frontend struct {

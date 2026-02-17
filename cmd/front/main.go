@@ -85,7 +85,7 @@ func (a *Frontend) InitServices() {
 	uRepo := repos.NewPostgresUserRepository(a.DB)
 	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
-	a.PostService = services.NewPostService(pRepo)
+	a.PostService = services.NewPostService(pRepo, a.Settings.Global.FingerprintSalt)
 	a.FileService = services.NewFileService(a.Settings.Global.AllowedMediaTypes)
 	a.UserService = services.NewUserService(uRepo)
 	a.SessionService = services.NewSessionService(sRepo, a.Settings.Api.SessionTokenSize)
@@ -123,10 +123,10 @@ func (a *Frontend) InitRoutes() {
 		r.Post("/logout", usersHandler.Logout)
 
 		r.Get("/{board_uri}", boardHandler.Board)
-		r.With(middlewares.RequireFingerprint).Post("/{board_uri}", boardHandler.NewThread)
+		r.Post("/{board_uri}", boardHandler.NewThread)
 
 		r.Get("/{board_uri}/{thread_id}", threadHandler.Thread)
-		r.With(middlewares.RequireFingerprint).Post("/{board_uri}/{thread_id}", threadHandler.Reply)
+		r.Post("/{board_uri}/{thread_id}", threadHandler.Reply)
 
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Page not found.", http.StatusNotFound)
@@ -184,5 +184,4 @@ func (a *Frontend) InitMiddlewares() {
 
 	a.Router.Use(middleware.Logger)
 	a.Router.Use(userMw.SetUser)
-	a.Router.Use(middlewares.SetFingerprint)
 }

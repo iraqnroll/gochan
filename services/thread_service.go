@@ -16,6 +16,7 @@ type IPostService interface {
 	CreatePost(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
 	GetThreadPosts(thread_id int) ([]models.PostDto, error)
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
+	GenerateFingerprint(ip string) string
 }
 
 type ThreadService struct {
@@ -97,4 +98,8 @@ func (ts *ThreadService) SortPostsIntoThreads(threads []models.ThreadDto, posts 
 
 func (ts *ThreadService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
 	return ts.postService.UpdateAttachedMedia(post_id, attached_media, original_media)
+}
+
+func (ts *ThreadService) GenerateFingerprint(ip string) string {
+	return ts.postService.GenerateFingerprint(ip)
 }

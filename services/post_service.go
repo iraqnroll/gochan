@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/rand"
 )
 
 type PostRepository interface {
@@ -14,11 +15,12 @@ type PostRepository interface {
 }
 
 type PostService struct {
-	PostRepo PostRepository
+	PostRepo        PostRepository
+	FingerprintSalt string
 }
 
-func NewPostService(repo PostRepository) *PostService {
-	return &PostService{PostRepo: repo}
+func NewPostService(repo PostRepository, fprintSalt string) *PostService {
+	return &PostService{PostRepo: repo, FingerprintSalt: fprintSalt}
 }
 
 // Creates a post in a specific thread
@@ -53,4 +55,9 @@ func (ps *PostService) GetMostRecent(num_of_posts int) ([]models.RecentPostsDto,
 // TODO: Maybe split this into a separate service ? right now thread service wraps this
 func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
 	return ps.PostRepo.UpdateAttachedMedia(post_id, attached_media, original_media)
+}
+
+// TODO: Thread service wraps this too.... either my board handler is structured wrong or i need a separate service...
+func (ps *PostService) GenerateFingerprint(ip string) string {
+	return rand.GenerateFingerprint(ip, ps.FingerprintSalt)
 }

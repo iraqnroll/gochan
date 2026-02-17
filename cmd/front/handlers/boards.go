@@ -81,8 +81,6 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	model.Posts[0].Post_fprint, _ = ReadCookie(r, UserFingerprint)
-
 	//TODO: Implement validation before saving anything
 	//Validate attached media formats.
 	m := r.MultipartForm
@@ -99,6 +97,9 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	//Generate fingerprint
+	model.Posts[0].Post_fprint = b.ThreadService.GenerateFingerprint(GetClientIp(r))
 
 	new_thread, err := b.ThreadService.CreateThread(
 		model.BoardId,
