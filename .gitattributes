@@ -1,15 +1,22 @@
-# Mark Font Awesome as vendored to exclude from language stats
+# Font Awesome - exclude all files from language stats
 static/fontawesome/** linguist-vendored
+static/fontawesome/**/* linguist-vendored
 
-#Mark templ files as vendored to exclude from language stats
+# Mark Font Awesome JS/CSS as generated (stronger exclusion)
+static/fontawesome/js/*.js linguist-generated
+static/fontawesome/js/*.min.js linguist-generated
+static/fontawesome/css/*.css linguist-generated
+static/fontawesome/css/*.min.css linguist-generated
+
+# Templ generated files
 views/*.templ linguist-vendored
+views/*.go linguist-generated
 
-# Also exclude any other third-party assets
+# Exclude all third-party JS/CSS
 static/js/vendor/** linguist-vendored
 static/css/vendor/** linguist-vendored
+*.min.js linguist-generated
+*.min.css linguist-generated
 
-# Ensure Go files are properly detected
-*.go linguist-language=Go
-
-# Mark generated files (if you have any)
-# *.gen.go linguist-generated=true
+# Mark Go as the primary detectable language
+*.go linguist-detectable=true
