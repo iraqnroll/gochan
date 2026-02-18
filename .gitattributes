@@ -1,0 +1,15 @@
+# Mark Font Awesome as vendored to exclude from language stats
+static/fontawesome/** linguist-vendored
+
+#Mark templ files as vendored to exclude from language stats
+views/*.templ linguist-vendored
+
+# Also exclude any other third-party assets
+static/js/vendor/** linguist-vendored
+static/css/vendor/** linguist-vendored
+
+# Ensure Go files are properly detected
+*.go linguist-language=Go
+
+# Mark generated files (if you have any)
+# *.gen.go linguist-generated=true
