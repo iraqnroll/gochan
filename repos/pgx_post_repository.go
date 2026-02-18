@@ -4,34 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
 	"github.com/iraqnroll/gochan/models"
-)
-
-const (
-	p_get_all_by_thread_query = `SELECT
-		p.id,
-		p.identifier,
-		p.content,
-		COALESCE(to_char(p.post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp,
-		p.is_op,
-		COALESCE(p.has_media, '') AS has_media
-		FROM posts AS p
-		INNER JOIN threads AS th ON th.id = p.thread_id
-		WHERE th.id = $1`
-	p_get_most_recent = `SELECT
-		board_uri,
-		board_name,
-		thread_id,
-		thread_topic,
-		post_id,
-		post_ident,
-		SUBSTRING(post_content for 100) AS post_content,
-		COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never') AS post_timestamp
-		FROM recent_posts
-		ORDER BY post_timestamp DESC
-		LIMIT $1`
-	p_create_new_query   = `INSERT INTO posts(thread_id, identifier, content, is_op, fingerprint) VALUES ($1, $2, $3, $4, $5) RETURNING id`
-	p_update_media_query = `UPDATE posts SET has_media = $2, og_media = $3 WHERE id = $1`
 )
 
 type PostgresPostRepository struct {
@@ -45,64 +19,97 @@ func NewPostgresPostRepository(db *sql.DB) *PostgresPostRepository {
 
 	return &PostgresPostRepository{db: db}
 }
+
+func (r *PostgresPostRepository) dbInstance() *goqu.Database {
+	return pgDialect.DB(r.db)
+}
+
 func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error) {
-	result := models.PostDto{ThreadId: thread_id, Identifier: identifier, Content: content, IsOP: is_op, Post_fprint: fingerprint}
-	row := r.db.QueryRow(p_create_new_query, result.ThreadId, result.Identifier, result.Content, result.IsOP, result.Post_fprint)
-	err := row.Scan(&result.Id)
+	var result models.PostDto
+
+	_, err := r.dbInstance().Insert("posts").
+		Cols("thread_id", "identifier", "content", "is_op", "fingerprint").
+		Vals([]interface{}{thread_id, identifier, content, is_op, fingerprint}).
+		Returning("id").
+		Executor().
+		ScanStruct(&result)
 	if err != nil {
-		return result, fmt.Errorf("PostgresPostRepository.CreateNew error : %w", err)
+		return result, fmt.Errorf("PostgresPostRepository.CreateNew error: %w", err)
 	}
 
+	result.ThreadId = thread_id
+	result.Identifier = identifier
+	result.Content = content
+	result.IsOP = is_op
+	result.Post_fprint = fingerprint
 	return result, nil
 }
 
-func (r *PostgresPostRepository) GetAllByThread(thread_id int) ([]models.PostDto, error) {
+func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]models.PostDto, error) {
 	var result []models.PostDto
-	rows, err := r.db.Query(p_get_all_by_thread_query, thread_id)
-	if err != nil {
-		return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error : %w", err)
-	}
-	defer rows.Close()
 
-	for rows.Next() {
-		post := models.PostDto{ThreadId: thread_id}
-		err := rows.Scan(&post.Id, &post.Identifier, &post.Content, &post.PostTimestamp, &post.IsOP, &post.HasMedia)
-		if err != nil {
-			return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error : %w", err)
-		}
-		result = append(result, post)
+	cols := []interface{}{
+		"id",
+		"identifier",
+		"content",
+		goqu.L("COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never')").As("post_timestamp"),
+		"is_op",
+		goqu.L("COALESCE(has_media, '')").As("has_media"),
 	}
+
+	if for_mod {
+		cols = append(cols, goqu.L("COALESCE(fingerprint, '')").As("post_fprint"))
+	}
+
+	err := r.dbInstance().From("posts").
+		Select(cols...).
+		Where(goqu.C("thread_id").Eq(thread_id)).
+		ScanStructs(&result)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error: %w", err)
+	}
+
+	for i := range result {
+		result[i].ThreadId = thread_id
+	}
+
 	return result, nil
 }
 
 func (r *PostgresPostRepository) GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error) {
 	var result []models.RecentPostsDto
-	rows, err := r.db.Query(p_get_most_recent, num_of_posts)
-	if err != nil {
-		return nil, fmt.Errorf("PostgresPostRepository.GetMostRecent error : %w", err)
-	}
-	defer rows.Close()
 
-	for rows.Next() {
-		post := models.RecentPostsDto{}
-		err := rows.Scan(
-			&post.Board_uri,
-			&post.Board_name,
-			&post.Thread_id,
-			&post.Thread_topic,
-			&post.Post_id,
-			&post.Post_ident,
-			&post.Post_content,
-			&post.Post_timestamp)
-		if err != nil {
-			return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error : %w", err)
-		}
-		result = append(result, post)
+	err := r.dbInstance().From("recent_posts").
+		Select(
+			"board_uri",
+			"board_name",
+			"thread_id",
+			"thread_topic",
+			"post_id",
+			"post_ident",
+			goqu.L("SUBSTRING(post_content for 100)").As("post_content"),
+			goqu.L("COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never')").As("post_timestamp"),
+		).
+		Order(goqu.C("post_timestamp").Desc()).
+		Limit(uint(num_of_posts)).
+		ScanStructs(&result)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresPostRepository.GetMostRecent error: %w", err)
 	}
+
 	return result, nil
 }
 
 func (r *PostgresPostRepository) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
-	_, err := r.db.Exec(p_update_media_query, post_id, attached_media, original_media)
-	return err
+	_, err := r.dbInstance().Update("posts").
+		Set(goqu.Record{
+			"has_media": attached_media,
+			"og_media":  original_media,
+		}).
+		Where(goqu.C("id").Eq(post_id)).
+		Executor().Exec()
+	if err != nil {
+		return fmt.Errorf("PostgresPostRepository.UpdateAttachedMedia error: %w", err)
+	}
+	return nil
 }

@@ -195,6 +195,12 @@ func (m Mod) UpdateBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	var model models.BoardDto
 	dec := schema.NewDecoder()
 	dec.IgnoreUnknownKeys(true)
@@ -216,6 +222,12 @@ func (m Mod) UpdateBoard(w http.ResponseWriter, r *http.Request) {
 
 func (m Mod) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	user_id, err := strconv.Atoi(chi.URLParam(r, "user_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

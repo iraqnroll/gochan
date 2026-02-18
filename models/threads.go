@@ -5,12 +5,12 @@ import (
 )
 
 type ThreadDto struct {
-	Id       int       `json:"id"`
+	Id       int       `db:"id" json:"id" schema:"id"`
 	Posts    []PostDto `json:"posts"`
-	Topic    string    `json:"topic"`
-	Locked   bool      `json:"locked"`
-	BoardId  int       `json:"board_id"`
-	BoardUri string    `json:"board_uri"`
+	Topic    string    `db:"topic" json:"topic" schema:"topic"`
+	Locked   bool      `db:"locked" json:"locked" schema:"locked"`
+	BoardId  int       `db:"board_id" json:"board_id" schema:"boardId"`
+	BoardUri string    `json:"board_uri" schema:"boardUri"`
 }
 
 type ThreadViewModel struct {

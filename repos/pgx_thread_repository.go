@@ -4,14 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/iraqnroll/gochan/models"
 )
 
-const (
-	t_get_by_id_query    = `SELECT locked, board_id, topic FROM threads WHERE id = $1`
-	t_get_by_board_query = `SELECT id, locked, topic FROM threads WHERE board_id = $1 ORDER BY id DESC`
-	t_create_new_query   = `INSERT INTO threads(board_id, topic) VALUES ($1, $2) RETURNING id`
-)
+var pgDialect = goqu.Dialect("postgres")
 
 type PostgresThreadRepository struct {
 	db *sql.DB
@@ -25,43 +23,60 @@ func NewPostgresThreadRepository(db *sql.DB) *PostgresThreadRepository {
 	return &PostgresThreadRepository{db: db}
 }
 
+func (r *PostgresThreadRepository) dbInstance() *goqu.Database {
+	return pgDialect.DB(r.db)
+}
+
 func (r *PostgresThreadRepository) GetById(thread_id int) (models.ThreadDto, error) {
-	result := models.ThreadDto{Id: thread_id}
-	row := r.db.QueryRow(t_get_by_id_query, result.Id)
-	err := row.Scan(&result.Locked, &result.BoardId, &result.Topic)
+	var result models.ThreadDto
+
+	found, err := r.dbInstance().From("threads").
+		Select("locked", "board_id", "topic").
+		Where(goqu.C("id").Eq(thread_id)).
+		ScanStruct(&result)
 	if err != nil {
-		return result, fmt.Errorf("PostgresThreadRepository.GetById error : %w", err)
+		return result, fmt.Errorf("PostgresThreadRepository.GetById error: %w", err)
+	}
+	if !found {
+		return result, fmt.Errorf("PostgresThreadRepository.GetById: thread not found")
 	}
 
+	result.Id = thread_id
 	return result, nil
 }
 
 func (r *PostgresThreadRepository) CreateNew(board_id int, topic string) (models.ThreadDto, error) {
-	result := models.ThreadDto{BoardId: board_id, Topic: topic}
-	row := r.db.QueryRow(t_create_new_query, result.BoardId, result.Topic)
-	err := row.Scan(&result.Id)
+	var result models.ThreadDto
+
+	_, err := r.dbInstance().Insert("threads").
+		Cols("board_id", "topic").
+		Vals([]interface{}{board_id, topic}).
+		Returning("id").
+		Executor().
+		ScanStruct(&result)
 	if err != nil {
-		return result, fmt.Errorf("PostgresThreadRepository.CreateNew error : %w", err)
+		return result, fmt.Errorf("PostgresThreadRepository.CreateNew error: %w", err)
 	}
 
+	result.BoardId = board_id
+	result.Topic = topic
 	return result, nil
 }
 
 func (r *PostgresThreadRepository) GetAllByBoard(board_id int) ([]models.ThreadDto, error) {
 	var result []models.ThreadDto
-	rows, err := r.db.Query(t_get_by_board_query, board_id)
-	if err != nil {
-		return nil, fmt.Errorf("PostgresThreadRepository.GetAllByBoard error : %w", err)
-	}
-	defer rows.Close()
 
-	for rows.Next() {
-		thread := models.ThreadDto{BoardId: board_id}
-		err := rows.Scan(&thread.Id, &thread.Locked, &thread.Topic)
-		if err != nil {
-			return result, fmt.Errorf("PostgresThreadRepository.GetAllByBoard error : %w", err)
-		}
-		result = append(result, thread)
+	err := r.dbInstance().From("threads").
+		Select("id", "locked", "topic").
+		Where(goqu.C("board_id").Eq(board_id)).
+		Order(goqu.C("id").Desc()).
+		ScanStructs(&result)
+	if err != nil {
+		return nil, fmt.Errorf("PostgresThreadRepository.GetAllByBoard error: %w", err)
+	}
+
+	for i := range result {
+		result[i].BoardId = board_id
 	}
 
 	return result, nil

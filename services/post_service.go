@@ -8,7 +8,7 @@ import (
 )
 
 type PostRepository interface {
-	GetAllByThread(thread_id int) ([]models.PostDto, error)
+	GetAllByThread(thread_id int, for_mod bool) ([]models.PostDto, error)
 	CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
@@ -35,7 +35,7 @@ func (ps *PostService) CreatePost(thread_id int, identifier, content, fingerprin
 
 // Fetches all posts of the specified thread
 func (ps *PostService) GetThreadPosts(thread_id int) ([]models.PostDto, error) {
-	posts, err := ps.PostRepo.GetAllByThread(thread_id)
+	posts, err := ps.PostRepo.GetAllByThread(thread_id, false)
 	if err != nil {
 		return nil, fmt.Errorf("PostService.GetThreadPosts failed : %w", err)
 	}

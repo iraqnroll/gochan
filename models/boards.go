@@ -3,21 +3,21 @@ package models
 import "github.com/microcosm-cc/bluemonday"
 
 type Board struct {
-	Id            int
-	Uri           string
-	Name          string
-	Description   string
-	Date_created  string
-	Date_updated  string
-	OwnerId       int
-	OwnerUsername string
+	Id            int    `db:"id" schema:"id"`
+	Uri           string `db:"uri" schema:"uri"`
+	Name          string `db:"name" schema:"name"`
+	Description   string `db:"description" schema:"description"`
+	Date_created  string `db:"date_created" schema:"date_created"`
+	Date_updated  string `db:"date_updated" schema:"date_updated"`
+	OwnerId       int    `db:"ownerId" schema:"ownerId"`
+	OwnerUsername string `db:"owner_username" schema:"owner_username"`
 }
 
 type BoardDto struct {
-	Id          int         `json:"id"`
-	Uri         string      `json:"uri"`
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
+	Id          int         `db:"id" json:"id" schema:"id"`
+	Uri         string      `db:"uri" json:"uri" schema:"uri"`
+	Name        string      `db:"name" json:"name" schema:"name"`
+	Description string      `db:"description" json:"description" schema:"description"`
 	Threads     []ThreadDto `json:"threads"`
 }
 
