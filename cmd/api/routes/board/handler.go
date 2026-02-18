@@ -51,7 +51,7 @@ func (a *API) Get(w http.ResponseWriter, r *http.Request) {
 	//TODO: add parameter validation
 	uri := chi.URLParam(r, "uri")
 
-	result, err := a.BoardService.GetBoard(uri)
+	result, err := a.BoardService.GetBoard(uri, false)
 	if err != nil {
 		http.Error(w, "Failed to fetch board by uri", http.StatusInternalServerError)
 	}

@@ -58,7 +58,7 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 	}
 
 	if for_mod {
-		cols = append(cols, goqu.L("COALESCE(fingerprint, '')").As("post_fprint"))
+		cols = append(cols, goqu.L("COALESCE(fingerprint, '')").As("fingerprint"))
 	}
 
 	err := r.dbInstance().From("posts").

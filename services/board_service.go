@@ -20,8 +20,8 @@ type BoardRepository interface {
 
 type IThreadService interface {
 	CreateThread(board_id int, topic, identifier, content, fingerprint string) (*models.ThreadDto, error)
-	GetThread(thread_id int) (*models.ThreadDto, error)
-	GetBoardThreads(board_id int) ([]models.ThreadDto, error)
+	GetThread(thread_id int, for_mod bool) (*models.ThreadDto, error)
+	GetBoardThreads(board_id int, for_mod bool) ([]models.ThreadDto, error)
 }
 
 type IFileService interface {
@@ -40,13 +40,13 @@ func NewBoardService(repo BoardRepository, thService IThreadService, fService IF
 }
 
 // Fetches board and it's content (threads/posts) for a specified board uri
-func (bs *BoardService) GetBoard(uri string) (*models.BoardDto, error) {
+func (bs *BoardService) GetBoard(uri string, for_mod bool) (*models.BoardDto, error) {
 	result, err := bs.boardRepo.GetByUri(uri)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
 	}
 
-	result.Threads, err = bs.thService.GetBoardThreads(result.Id)
+	result.Threads, err = bs.thService.GetBoardThreads(result.Id, for_mod)
 	if err != nil {
 		return nil, fmt.Errorf("BoardService.GetBoard failed : %w", err)
 	}

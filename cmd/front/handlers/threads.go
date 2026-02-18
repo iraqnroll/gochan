@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/schema"
+	"github.com/iraqnroll/gochan/context"
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/services"
 	"github.com/iraqnroll/gochan/views"
@@ -42,7 +43,12 @@ func (t Threads) Thread(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid thread Id...", http.StatusBadRequest)
 		return
 	}
-	thread, err := t.ThreadService.GetThread(id)
+
+	//TODO: Only set for_mod for specific user types.
+	//Fetch user from context
+	for_mod := context.User(r.Context()) != nil
+
+	thread, err := t.ThreadService.GetThread(id, for_mod)
 	if err != nil {
 		http.Error(w, "Unable to fetch requested thread : "+err.Error(), http.StatusInternalServerError)
 		return

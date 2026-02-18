@@ -34,8 +34,8 @@ func (ps *PostService) CreatePost(thread_id int, identifier, content, fingerprin
 }
 
 // Fetches all posts of the specified thread
-func (ps *PostService) GetThreadPosts(thread_id int) ([]models.PostDto, error) {
-	posts, err := ps.PostRepo.GetAllByThread(thread_id, false)
+func (ps *PostService) GetThreadPosts(thread_id int, for_mod bool) ([]models.PostDto, error) {
+	posts, err := ps.PostRepo.GetAllByThread(thread_id, for_mod)
 	if err != nil {
 		return nil, fmt.Errorf("PostService.GetThreadPosts failed : %w", err)
 	}

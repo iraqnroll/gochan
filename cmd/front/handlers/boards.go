@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/schema"
+	"github.com/iraqnroll/gochan/context"
 	"github.com/iraqnroll/gochan/models"
 	"github.com/iraqnroll/gochan/services"
 	"github.com/iraqnroll/gochan/views"
@@ -35,7 +36,9 @@ func NewBoardsHandler(boardSvc *services.BoardService, threadSvc *services.Threa
 
 func (b Boards) Board(w http.ResponseWriter, r *http.Request) {
 	board_uri := chi.URLParam(r, "board_uri")
-	board, err := b.BoardService.GetBoard(board_uri)
+	for_mod := context.User(r.Context()) != nil
+
+	board, err := b.BoardService.GetBoard(board_uri, for_mod)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Board not found...", http.StatusNotFound)

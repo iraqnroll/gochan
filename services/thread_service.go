@@ -14,7 +14,7 @@ type ThreadRepository interface {
 
 type IPostService interface {
 	CreatePost(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
-	GetThreadPosts(thread_id int) ([]models.PostDto, error)
+	GetThreadPosts(thread_id int, for_mod bool) ([]models.PostDto, error)
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 	GenerateFingerprint(ip string) string
 }
@@ -46,14 +46,14 @@ func (ts *ThreadService) CreateThread(board_id int, topic, identifier, content, 
 }
 
 // Gets a specified thread and it's content (posts)
-func (ts *ThreadService) GetThread(thread_id int) (*models.ThreadDto, error) {
+func (ts *ThreadService) GetThread(thread_id int, for_mod bool) (*models.ThreadDto, error) {
 	result, err := ts.threadRepo.GetById(thread_id)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.GetThread failed : %w", err)
 	}
 
 	//We found a valid active thread, fetch posts
-	posts, err := ts.postService.GetThreadPosts(thread_id)
+	posts, err := ts.postService.GetThreadPosts(thread_id, for_mod)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.GetThread failed : %w", err)
 	}
@@ -65,14 +65,14 @@ func (ts *ThreadService) GetThread(thread_id int) (*models.ThreadDto, error) {
 
 // Fetches threads and their respective content (posts) for a specified board.
 // TODO: Refactor post fetching, right now we query the db for each thread when we could fetch all of it in one query (if its even needed).
-func (ts *ThreadService) GetBoardThreads(board_id int) ([]models.ThreadDto, error) {
+func (ts *ThreadService) GetBoardThreads(board_id int, for_mod bool) ([]models.ThreadDto, error) {
 	result, err := ts.threadRepo.GetAllByBoard(board_id)
 	if err != nil {
 		return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
 	}
 
 	for i, thread := range result {
-		posts, err := ts.postService.GetThreadPosts(thread.Id)
+		posts, err := ts.postService.GetThreadPosts(thread.Id, for_mod)
 		if err != nil {
 			return nil, fmt.Errorf("ThreadService.GetBoardThreads failed : %w", err)
 		}

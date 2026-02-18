@@ -30,7 +30,7 @@ func (a *API) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := a.ThreadService.GetThread(id)
+	result, err := a.ThreadService.GetThread(id, false)
 	if err != nil {
 		http.Error(w, "Failed to fetch thread by id", http.StatusInternalServerError)
 		return
