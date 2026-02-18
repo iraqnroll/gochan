@@ -44,6 +44,7 @@ COPY --from=builder /app/gochan .
 #Copy static assets (css/js)
 COPY static/js /app/static/js
 COPY static/stylesheets /app/static/stylesheets
+COPY static/fontawesome /app/static/fontawesome
 
 #Copy migrations
 COPY migrations /app/migrations
