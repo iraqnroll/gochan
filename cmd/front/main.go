@@ -113,7 +113,7 @@ func (a *Frontend) InitRoutes() {
 	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10, a.PostPolicy)
 	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50, a.PostPolicy)
 	usersHandler := handlers.NewUsersHandler(a.UserService, a.SessionService, parentPageData)
-	modHandler := handlers.NewModHandler(a.UserService, a.BoardService, a.ThreadService, a.FileService, parentPageData)
+	modHandler := handlers.NewModHandler(a.UserService, a.BoardService, a.ThreadService, a.PostService, a.FileService, parentPageData)
 
 	//Base route
 	a.Router.Route("/", func(r chi.Router) {
@@ -151,7 +151,9 @@ func (a *Frontend) InitRoutes() {
 			r.Post("/create", modHandler.CreateBoard)
 			r.Post("/delete", modHandler.DeleteBoard)
 			r.Post("/update/{board_id}", modHandler.UpdateBoard)
-
+		})
+		r.Route("/actions", func(r chi.Router) {
+			r.Post("/deletepost", modHandler.SoftDeletePost)
 		})
 	})
 }

@@ -12,5 +12,5 @@ SELECT DISTINCT ON (t.id)
 FROM posts AS p
 INNER JOIN threads AS t ON t.id = p.thread_id
 INNER JOIN boards AS b ON b.id = t.board_id
-WHERE t.locked IS FALSE
+WHERE t.locked IS FALSE AND p.deleted IS FALSE
 ORDER BY t.id, p.post_timestamp DESC

@@ -153,6 +153,7 @@ func ThreadSectionComponent(data any) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if model, ok := data.(models.ThreadViewModel); ok {
+			thread_url := fmt.Sprintf("/%s/%d", model.BoardUri, model.Id)
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<hr><div class=\"thread\" thread-id=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -160,7 +161,7 @@ func ThreadSectionComponent(data any) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(model.Id)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/thread.templ`, Line: 30, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/thread.templ`, Line: 31, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -173,7 +174,7 @@ func ThreadSectionComponent(data any) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(model.BoardUri)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/thread.templ`, Line: 30, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/thread.templ`, Line: 31, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -183,12 +184,12 @@ func ThreadSectionComponent(data any) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = PostComponent(model.OPPost, model.BoardUri, "", "post op", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, reply := range model.Replies {
-				templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, "", "post reply", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

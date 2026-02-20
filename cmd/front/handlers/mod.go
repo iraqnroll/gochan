@@ -21,6 +21,7 @@ type Mod struct {
 	UserService   *services.UserService
 	BoardService  *services.BoardService
 	ThreadService *services.ThreadService
+	PostService   *services.PostService
 	FileService   *services.FileService
 	ParentPage    models.ParentPageData
 }
@@ -29,11 +30,13 @@ func NewModHandler(
 	userSvc *services.UserService,
 	boardSvc *services.BoardService,
 	threadSvc *services.ThreadService,
+	postSvc *services.PostService,
 	fileSvc *services.FileService,
 	parentPage models.ParentPageData) (m Mod) {
 	m.UserService = userSvc
 	m.BoardService = boardSvc
 	m.ThreadService = threadSvc
+	m.PostService = postSvc
 	m.FileService = fileSvc
 	m.ParentPage = parentPage
 
@@ -255,4 +258,26 @@ func (m Mod) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, DEFAULT_USERS_REDIRECT, http.StatusFound)
+}
+
+func (m Mod) SoftDeletePost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	post_id, err := strconv.Atoi(r.FormValue("post_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.PostService.SoftDeletePost(post_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
 }

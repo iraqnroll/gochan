@@ -367,3 +367,25 @@ templ ModMenuComponent() {
         </div>
     </div>
 }
+
+templ PostModerationComponent(fingerprint, curr_url string, post_id int, is_op bool) {
+    <div class="mod_toolbarwrap">
+        <div class="mod_fingerprint">
+            <i class="fa-solid fa-fingerprint"></i>
+            <a>{ fingerprint }</a>
+        </div>
+        <div class="mod_actions">
+            if !is_op {
+                <div class="mod_hidepost">
+                    <form action="/mod/actions/deletepost" method="post">
+                        <input type="hidden" name="post_id" value={ post_id }>
+                        <input type="hidden" name="redirect" value= { curr_url }>
+                        <button type="submit" style="background: none; border: none; cursor: pointer;" title="Hide post">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+}

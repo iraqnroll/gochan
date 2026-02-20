@@ -5,5 +5,8 @@ CREATE TABLE posts (
     content TEXT,
     post_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     is_op BOOLEAN NOT NULL DEFAULT(FALSE),
-    has_media TEXT
+    has_media TEXT,
+    og_media TEXT,
+    fingerprint TEXT,
+    deleted BOOLEAN DEFAULT(FALSE)
 )

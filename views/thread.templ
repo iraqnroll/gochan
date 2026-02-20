@@ -26,11 +26,12 @@ templ ThreadHeaderComponent(data any) {
 
 templ ThreadSectionComponent(data any) {
     if model, ok := data.(models.ThreadViewModel); ok {
+        {{ thread_url := fmt.Sprintf("/%s/%d", model.BoardUri, model.Id)}}
         <hr>
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
-            @PostComponent(model.OPPost, model.BoardUri, "", "post op", model.BoardView)
+            @PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView)
             for _, reply := range model.Replies {
-                @PostComponent(reply, model.BoardUri, "", "post reply", model.BoardView)
+                @PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView)
             }
         </div>
         <hr>

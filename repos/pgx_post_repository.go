@@ -63,7 +63,10 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 
 	err := r.dbInstance().From("posts").
 		Select(cols...).
-		Where(goqu.C("thread_id").Eq(thread_id)).
+		Where(goqu.Ex{
+			"thread_id": thread_id,
+			"deleted":   false,
+		}).
 		ScanStructs(&result)
 	if err != nil {
 		return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error: %w", err)
@@ -110,6 +113,20 @@ func (r *PostgresPostRepository) UpdateAttachedMedia(post_id int, attached_media
 		Executor().Exec()
 	if err != nil {
 		return fmt.Errorf("PostgresPostRepository.UpdateAttachedMedia error: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresPostRepository) SoftDeletePost(post_id int) error {
+	_, err := r.dbInstance().Update("posts").
+		Set(goqu.Record{
+			"deleted": true,
+		}).
+		Where(goqu.C("id").Eq(post_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresPostRepository.SoftDeletePost error: %w", err)
 	}
 	return nil
 }

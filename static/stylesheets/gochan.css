@@ -479,3 +479,38 @@ code {
     font-family: monospace;
     font-size: 12px;
 }
+
+.mod_toolbarwrap {
+    background: #fca;
+    padding: 3px 10px;
+    border: 1px outset #fca;
+    border-top: 1px solid #FFEFE5;
+    border-left: 1px solid #FFEFE5;
+    border-bottom: 1px solid #8d715e;
+    border-right: 1px solid #8d715e;
+    display: flow-root;
+}
+
+.mod_fingerprint {
+    white-space: nowrap;
+    float:left;
+}
+
+.mod_actions {
+    white-space: nowrap;
+    float: right;
+}
+
+.mod_fingerprint div {
+    font-size: 12px;
+    display:inline-block;
+}
+
+.mod_actions i {
+    color: #800000;
+}
+
+.mod_actions div {
+    font-size: 12px;
+    display: inline-block;
+}
