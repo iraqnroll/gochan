@@ -31,7 +31,11 @@ templ ThreadSectionComponent(data any) {
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
             @PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView)
             for _, reply := range model.Replies {
-                @PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView)
+                if reply.Deleted {
+                    @PostComponent(reply, model.BoardUri, thread_url, "post reply deleted", model.BoardView)
+                } else {
+                    @PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView)
+                }
             }
         </div>
         <hr>

@@ -170,7 +170,7 @@ func PostComponent(post models.PostDto, board_uri, thread_url, post_class string
 				return templ_7745c5c3_Err
 			}
 			if show_modbar {
-				templ_7745c5c3_Err = PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -238,7 +238,7 @@ func PostComponent(post models.PostDto, board_uri, thread_url, post_class string
 				return templ_7745c5c3_Err
 			}
 			if show_modbar {
-				templ_7745c5c3_Err = PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -13,6 +13,7 @@ type PostRepository interface {
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 	SoftDeletePost(post_id int) error
+	RemoveSoftDeleteFromPost(post_id int) error
 }
 
 type PostService struct {
@@ -56,6 +57,10 @@ func (ps *PostService) GetMostRecent(num_of_posts int) ([]models.RecentPostsDto,
 // TODO: Deal with attached post media, if we hide the post, we want to hide the attached content from /static as well
 func (ps *PostService) SoftDeletePost(post_id int) error {
 	return ps.PostRepo.SoftDeletePost(post_id)
+}
+
+func (ps *PostService) RemoveSoftDeleteFromPost(post_id int) error {
+	return ps.PostRepo.RemoveSoftDeleteFromPost(post_id)
 }
 
 // TODO: Maybe split this into a separate service ? right now thread service wraps this

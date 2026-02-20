@@ -281,3 +281,25 @@ func (m Mod) SoftDeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, redirect, http.StatusFound)
 }
+
+func (m Mod) RemoveSoftDeleteFromPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	post_id, err := strconv.Atoi(r.FormValue("post_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.PostService.RemoveSoftDeleteFromPost(post_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
+}

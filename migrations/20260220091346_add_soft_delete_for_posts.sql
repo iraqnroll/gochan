@@ -1,7 +1,7 @@
 -- +goose Up
 
 -- +goose StatementBegin
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted BOOLEAN DEFAULT(FALSE);
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT(FALSE);
 -- +goose StatementEnd
 
 -- +goose statementbegin

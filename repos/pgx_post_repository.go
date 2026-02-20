@@ -47,6 +47,7 @@ func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, f
 
 func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]models.PostDto, error) {
 	var result []models.PostDto
+	var whereExpr goqu.Ex
 
 	cols := []interface{}{
 		"id",
@@ -59,14 +60,21 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 
 	if for_mod {
 		cols = append(cols, goqu.L("COALESCE(fingerprint, '')").As("fingerprint"))
+		cols = append(cols, "deleted")
+		whereExpr = goqu.Ex{
+			"thread_id": thread_id,
+		}
+	} else {
+		whereExpr = goqu.Ex{
+			"thread_id": thread_id,
+			"deleted":   false,
+		}
 	}
 
 	err := r.dbInstance().From("posts").
 		Select(cols...).
-		Where(goqu.Ex{
-			"thread_id": thread_id,
-			"deleted":   false,
-		}).
+		Where(whereExpr).
+		Order(goqu.C("id").Asc()).
 		ScanStructs(&result)
 	if err != nil {
 		return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error: %w", err)
@@ -127,6 +135,20 @@ func (r *PostgresPostRepository) SoftDeletePost(post_id int) error {
 
 	if err != nil {
 		return fmt.Errorf("PostgresPostRepository.SoftDeletePost error: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresPostRepository) RemoveSoftDeleteFromPost(post_id int) error {
+	_, err := r.dbInstance().Update("posts").
+		Set(goqu.Record{
+			"deleted": false,
+		}).
+		Where(goqu.C("id").Eq(post_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresPostRepository.RemoveSoftDeleteFromPost error: %w", err)
 	}
 	return nil
 }

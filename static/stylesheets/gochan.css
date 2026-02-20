@@ -345,6 +345,10 @@ div.post.reply div.body {
     font-size: 16px;
 }
 
+div.post.reply.deleted {
+    opacity: 40%;
+}
+
 div.post div.body {
     margin-left: 1.8em;
     margin-top: 0.8em;

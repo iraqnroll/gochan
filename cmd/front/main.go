@@ -154,6 +154,7 @@ func (a *Frontend) InitRoutes() {
 		})
 		r.Route("/actions", func(r chi.Router) {
 			r.Post("/deletepost", modHandler.SoftDeletePost)
+			r.Post("/undeletepost", modHandler.RemoveSoftDeleteFromPost)
 		})
 	})
 }

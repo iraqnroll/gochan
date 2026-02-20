@@ -123,7 +123,7 @@ templ PostComponent(post models.PostDto, board_uri, thread_url, post_class strin
     if post_class == "post op" {
         <div class={ post_class } id={ postId }>
             if show_modbar {
-                @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP)
+                @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted)
             }
             if post.HasMedia != "" {
                 @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
@@ -137,7 +137,7 @@ templ PostComponent(post models.PostDto, board_uri, thread_url, post_class strin
         <div class="reply-container">
             <div class={ post_class } id={ postId }>
                 if show_modbar {
-                    @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP)
+                    @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted)
                 }
                 @PostIntroComponent(post, false, board_uri)
                 <div class="content">

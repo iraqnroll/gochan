@@ -21,6 +21,7 @@ type PostDto struct {
 	PostTimestamp string `db:"post_timestamp" json:"post_timestamp" schema:"post_timestamp"`
 	IsOP          bool   `db:"is_op" json:"is_op" schema:"is_op"`
 	Post_fprint   string `db:"fingerprint" json:"post_fprint" schema:"post_fprint"`
+	Deleted       bool   `db:"deleted" json:"deleted" schema:"deleted"`
 	OgMedia       string `db:"og_media" schema:"og_media"`
 	HasMedia      string `db:"has_media" schema:"has_media"`
 }
