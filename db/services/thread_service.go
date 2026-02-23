@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
 )
 
 type ThreadRepository interface {
@@ -94,12 +94,4 @@ func (ts *ThreadService) SortPostsIntoThreads(threads []models.ThreadDto, posts 
 		threadId := threads[i].Id
 		threads[i].Posts = postHashMap[threadId]
 	}
-}
-
-func (ts *ThreadService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
-	return ts.postService.UpdateAttachedMedia(post_id, attached_media, original_media)
-}
-
-func (ts *ThreadService) GenerateFingerprint(ip string) string {
-	return ts.postService.GenerateFingerprint(ip)
 }

@@ -14,18 +14,15 @@ import (
 	"github.com/iraqnroll/gochan/cmd/front/handlers"
 	"github.com/iraqnroll/gochan/cmd/front/middlewares"
 	"github.com/iraqnroll/gochan/config"
-	"github.com/iraqnroll/gochan/models"
-	"github.com/iraqnroll/gochan/repos"
-	"github.com/iraqnroll/gochan/services"
-	"github.com/microcosm-cc/bluemonday"
+	"github.com/iraqnroll/gochan/db/models"
+	"github.com/iraqnroll/gochan/db/repos"
+	"github.com/iraqnroll/gochan/db/services"
 	"github.com/pressly/goose"
 )
 
 type Frontend struct {
-	DB         *sql.DB
-	Router     *chi.Mux
-	Settings   *config.Config
-	PostPolicy *bluemonday.Policy
+	DB     *sql.DB
+	Router *chi.Mux
 
 	BoardService   *services.BoardService
 	PostService    *services.PostService
@@ -40,9 +37,9 @@ func (a *Frontend) Run(host string) {
 	log.Fatal(http.ListenAndServe(host, a.Router))
 }
 
-func (a *Frontend) Init(cfg *config.Config) {
+func (a *Frontend) Init() {
 	//TODO: Refactor this shit, config that takes config as a parameter ?
-	db, err := config.OpenDBConn(cfg.Database)
+	db, err := config.OpenDBConn()
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +50,6 @@ func (a *Frontend) Init(cfg *config.Config) {
 		panic(err)
 	}
 
-	a.Settings = cfg
 	a.DB = db
 
 	goose.SetLogger(log.Default())
@@ -65,7 +61,7 @@ func (a *Frontend) Init(cfg *config.Config) {
 	a.Router = chi.NewRouter()
 	a.InitServices()
 	a.InitMiddlewares()
-	a.InitFileServer(cfg.Frontend.StaticDir, "static")
+	a.InitFileServer(config.FrontendStaticDir(), "static")
 	a.InitRoutes()
 }
 
@@ -85,33 +81,27 @@ func (a *Frontend) InitServices() {
 	uRepo := repos.NewPostgresUserRepository(a.DB)
 	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
-	a.PostService = services.NewPostService(pRepo, a.Settings.Global.FingerprintSalt)
-	a.FileService = services.NewFileService(a.Settings.Global.AllowedMediaTypes)
+	a.PostService = services.NewPostService(pRepo, config.FingerprintSalt())
+	a.FileService = services.NewFileService(config.AllowedMediaTypes())
 	a.UserService = services.NewUserService(uRepo)
-	a.SessionService = services.NewSessionService(sRepo, a.Settings.Api.SessionTokenSize)
+	a.SessionService = services.NewSessionService(sRepo, config.SessionTokenSize())
 
 	a.ThreadService = services.NewThreadService(tRepo, a.PostService)
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)
-
-	//Initialize policies to sanitize user posts.
-	a.PostPolicy = bluemonday.UGCPolicy()
-	a.PostPolicy.AllowStandardURLs()
-	a.PostPolicy.AllowElements("a", "pre", "code")
-	a.PostPolicy.AllowAttrs("class").OnElements("span")
-	a.PostPolicy.AllowAttrs("href").OnElements("a")
 }
 
 // TODO: Implement caching of viewmodels/global page data
 func (a *Frontend) InitRoutes() {
-	footerData := models.FooterData{Sitename: a.Settings.Global.Shortname}
+	footerData := models.FooterData{Sitename: config.Shortname()}
 	parentPageData := models.ParentPageData{
 		Footer:    footerData,
-		Shortname: a.Settings.Global.Shortname,
-		Subtitle:  a.Settings.Global.Subtitle}
+		Shortname: config.Shortname(),
+		Subtitle:  config.Subtitle(),
+	}
 
-	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, a.Settings.Global.RecentPostsNum)
-	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.FileService, parentPageData, 10, a.PostPolicy)
-	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50, a.PostPolicy)
+	homeHandler := handlers.NewHomeHandler(a.BoardService, a.PostService, parentPageData, config.NumberOfRecentPosts())
+	boardHandler := handlers.NewBoardsHandler(a.BoardService, a.ThreadService, a.PostService, a.FileService, parentPageData, 10)
+	threadHandler := handlers.NewThreadsHandler(a.ThreadService, a.PostService, a.FileService, parentPageData, 50)
 	usersHandler := handlers.NewUsersHandler(a.UserService, a.SessionService, parentPageData)
 	modHandler := handlers.NewModHandler(a.UserService, a.BoardService, a.ThreadService, a.PostService, a.FileService, parentPageData)
 

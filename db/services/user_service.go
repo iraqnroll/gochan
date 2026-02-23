@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

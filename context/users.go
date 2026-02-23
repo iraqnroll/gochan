@@ -3,7 +3,7 @@ package context
 import (
 	"context"
 
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
 )
 
 type uKey string

@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
 )
 
 func LoginPageComponent(pageData models.ParentPageData) templ.Component {

@@ -1,18 +1,5 @@
 package models
 
-import (
-	"bytes"
-	"sync"
-
-	mdextensions "github.com/iraqnroll/gochan/md_extensions"
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/renderer"
-	"github.com/yuin/goldmark/renderer/html"
-	"github.com/yuin/goldmark/util"
-)
-
 type PostDto struct {
 	Id            int    `db:"id" json:"id" schema:"id"`
 	ThreadId      int    `db:"thread_id" json:"thread_id" schema:"threadId"`
@@ -36,42 +23,4 @@ type RecentPostsDto struct {
 	Post_content   string `db:"post_content" json:"post_content" schema:"post_content"`
 	Post_timestamp string `db:"post_timestamp" json:"post_timestamp" schema:"post_timestamp"`
 	HasMedia       string `db:"has_media" schema:"has_media"`
-}
-
-var getMarkdownParser = sync.OnceValue(func() goldmark.Markdown {
-	p := parser.NewParser(
-		parser.WithBlockParsers(
-			util.Prioritized(&mdextensions.GochanGreentextParser{}, 50),
-			util.Prioritized(parser.NewCodeBlockParser(), 60),
-			util.Prioritized(parser.NewFencedCodeBlockParser(), 60),
-			util.Prioritized(parser.NewParagraphParser(), 100),
-		),
-		parser.WithInlineParsers(
-			util.Prioritized(parser.NewCodeSpanParser(), 70),
-			util.Prioritized(&mdextensions.GochanInlineRefParser{}, 100),
-		),
-	)
-
-	r := renderer.NewRenderer(
-		renderer.WithNodeRenderers(
-			util.Prioritized(html.NewRenderer(), 100),
-			util.Prioritized(&mdextensions.GochanHTMLRenderer{}, 500),
-		),
-	)
-
-	return goldmark.New(
-		goldmark.WithParser(p),
-		goldmark.WithRenderer(r),
-		goldmark.WithExtensions(mdextensions.New()),
-	)
-})
-
-func RenderSafeMarkdown(md string, pPol *bluemonday.Policy) (string, error) {
-	var buf bytes.Buffer
-	if err := getMarkdownParser().Convert([]byte(md), &buf); err != nil {
-		return "", err
-	}
-	safe := pPol.SanitizeBytes(buf.Bytes())
-
-	return string(safe), nil
 }

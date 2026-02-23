@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/iraqnroll/gochan/config"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/services"
 )
 
 type API struct {
-	PostService *services.PostService
-	Settings    *config.API
+	PostService    *services.PostService
+	RecentPostsNum int
 }
 
 func (a *API) ListMostRecent(w http.ResponseWriter, r *http.Request) {
-	result, err := a.PostService.GetMostRecent(a.Settings.RecentPostsNum)
+	result, err := a.PostService.GetMostRecent(a.RecentPostsNum)
 	if err != nil {
 		fmt.Println("Error: %s \n", err)
 		http.Error(w, "Failed to fetch most recent posts", http.StatusInternalServerError)

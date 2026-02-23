@@ -7,21 +7,21 @@ import (
 )
 
 func main() {
-	cfg := config.InitConfig()
+	config.InitConfig()
 
-	if !cfg.Api.Enabled && !cfg.Frontend.Enabled {
+	if !config.ApiEnabled() && !config.FrontendEnabled() {
 		panic("All features disabled, nothing to run !")
 	}
 
-	if cfg.Api.Enabled {
+	if config.ApiEnabled() {
 		gochanApi := api.Api{}
-		gochanApi.Init(cfg)
+		gochanApi.Init()
 		gochanApi.Run(":4000")
 	}
 
-	if cfg.Frontend.Enabled {
+	if config.FrontendEnabled() {
 		gochanFront := front.Frontend{}
-		gochanFront.Init(cfg)
+		gochanFront.Init()
 		gochanFront.Run(":3000")
 	}
 }

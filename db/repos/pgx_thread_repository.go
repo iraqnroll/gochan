@@ -6,7 +6,7 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
 )
 
 var pgDialect = goqu.Dialect("postgres")

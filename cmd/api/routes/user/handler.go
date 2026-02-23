@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/services"
 )
 
 type API struct {

@@ -1,7 +1,5 @@
 package models
 
-import "github.com/microcosm-cc/bluemonday"
-
 type Board struct {
 	Id            int    `db:"id" schema:"id"`
 	Uri           string `db:"uri" schema:"uri"`
@@ -32,7 +30,7 @@ type BoardViewModel struct {
 	ErrMsg         string
 }
 
-func NewBoardViewModel(id, threads_per_page int, uri, name, desc, banner_url string, threads []ThreadDto, pPol *bluemonday.Policy) (m BoardViewModel) {
+func NewBoardViewModel(id, threads_per_page int, uri, name, desc, banner_url string, threads []ThreadDto) (m BoardViewModel) {
 	m.Id = id
 	m.ThreadsPerPage = threads_per_page
 	m.Uri = uri
@@ -41,7 +39,7 @@ func NewBoardViewModel(id, threads_per_page int, uri, name, desc, banner_url str
 	m.BannerUrl = banner_url
 
 	for _, thread := range threads {
-		result := NewThreadsViewModel(thread.Id, 10, banner_url, uri, thread.Topic, thread.Posts[0], thread.Posts[1:], true, pPol)
+		result := NewThreadsViewModel(thread.Id, 10, banner_url, uri, thread.Topic, thread.Posts[0], thread.Posts[1:], true)
 		m.Threads = append(m.Threads, result)
 	}
 

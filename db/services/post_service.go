@@ -1,10 +1,18 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
 
-	"github.com/iraqnroll/gochan/models"
+	"github.com/iraqnroll/gochan/db/models"
+	mdextensions "github.com/iraqnroll/gochan/md_extensions"
 	"github.com/iraqnroll/gochan/rand"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/util"
 )
 
 type PostRepository interface {
@@ -19,10 +27,55 @@ type PostRepository interface {
 type PostService struct {
 	PostRepo        PostRepository
 	FingerprintSalt string
+	PostPolicy      *bluemonday.Policy
+	MdParser        goldmark.Markdown
+}
+
+func initPostPolicies() *bluemonday.Policy {
+	policy := bluemonday.UGCPolicy()
+	policy.AllowStandardURLs()
+	policy.AllowElements("a", "pre", "code")
+	policy.AllowAttrs("class").OnElements("span")
+	policy.AllowAttrs("href").OnElements("a")
+
+	return policy
+}
+
+func initGoldmarkParser() goldmark.Markdown {
+	p := parser.NewParser(
+		parser.WithBlockParsers(
+			util.Prioritized(&mdextensions.GochanGreentextParser{}, 50),
+			util.Prioritized(parser.NewCodeBlockParser(), 60),
+			util.Prioritized(parser.NewFencedCodeBlockParser(), 60),
+			util.Prioritized(parser.NewParagraphParser(), 100),
+		),
+		parser.WithInlineParsers(
+			util.Prioritized(parser.NewCodeSpanParser(), 70),
+			util.Prioritized(&mdextensions.GochanInlineRefParser{}, 100),
+		),
+	)
+
+	r := renderer.NewRenderer(
+		renderer.WithNodeRenderers(
+			util.Prioritized(html.NewRenderer(), 100),
+			util.Prioritized(&mdextensions.GochanHTMLRenderer{}, 500),
+		),
+	)
+
+	return goldmark.New(
+		goldmark.WithParser(p),
+		goldmark.WithRenderer(r),
+		goldmark.WithExtensions(mdextensions.New()),
+	)
 }
 
 func NewPostService(repo PostRepository, fprintSalt string) *PostService {
-	return &PostService{PostRepo: repo, FingerprintSalt: fprintSalt}
+	return &PostService{
+		PostRepo:        repo,
+		FingerprintSalt: fprintSalt,
+		PostPolicy:      initPostPolicies(),
+		MdParser:        initGoldmarkParser(),
+	}
 }
 
 // Creates a post in a specific thread
@@ -71,4 +124,14 @@ func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media, original
 // TODO: Thread service wraps this too.... either my board handler is structured wrong or i need a separate service...
 func (ps *PostService) GenerateFingerprint(ip string) string {
 	return rand.GenerateFingerprint(ip, ps.FingerprintSalt)
+}
+
+func (ps *PostService) RenderSafeMarkdown(md string) (string, error) {
+	var buf bytes.Buffer
+	if err := ps.MdParser.Convert([]byte(md), &buf); err != nil {
+		return "", err
+	}
+	safe := ps.PostPolicy.SanitizeBytes(buf.Bytes())
+
+	return string(safe), nil
 }

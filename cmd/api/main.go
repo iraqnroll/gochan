@@ -12,14 +12,13 @@ import (
 	"github.com/iraqnroll/gochan/cmd/api/routes/thread"
 	"github.com/iraqnroll/gochan/cmd/api/routes/user"
 	"github.com/iraqnroll/gochan/config"
-	"github.com/iraqnroll/gochan/repos"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/repos"
+	"github.com/iraqnroll/gochan/db/services"
 )
 
 type Api struct {
-	DB       *sql.DB
-	Router   *chi.Mux
-	Settings *config.Config
+	DB     *sql.DB
+	Router *chi.Mux
 
 	BoardService   *services.BoardService
 	PostService    *services.PostService
@@ -43,9 +42,9 @@ func (a *Api) Run(host string) {
 	log.Fatal(http.ListenAndServe(host, a.Router))
 }
 
-func (a *Api) Init(cfg *config.Config) {
+func (a *Api) Init() {
 	//TODO: Refactor this shit, config that takes config as a parameter ?
-	db, err := config.OpenDBConn(cfg.Database)
+	db, err := config.OpenDBConn()
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +55,6 @@ func (a *Api) Init(cfg *config.Config) {
 		panic(err)
 	}
 
-	a.Settings = cfg
 	a.DB = db
 	a.Router = chi.NewRouter()
 
@@ -81,17 +79,17 @@ func (a *Api) InitServices() {
 	uRepo := repos.NewPostgresUserRepository(a.DB)
 	sRepo := repos.NewPostgresSessionRepository(a.DB)
 
-	a.PostService = services.NewPostService(pRepo, a.Settings.Global.FingerprintSalt)
-	a.FileService = services.NewFileService(a.Settings.Global.AllowedMediaTypes)
+	a.PostService = services.NewPostService(pRepo, config.FingerprintSalt())
+	a.FileService = services.NewFileService(config.AllowedMediaTypes())
 	a.UserService = services.NewUserService(uRepo)
-	a.SessionService = services.NewSessionService(sRepo, a.Settings.Api.SessionTokenSize)
+	a.SessionService = services.NewSessionService(sRepo, config.SessionTokenSize())
 
 	a.ThreadService = services.NewThreadService(tRepo, a.PostService)
 	a.BoardService = services.NewBoardService(bRepo, a.ThreadService, a.FileService)
 }
 
 func (a *Api) InitRoutes() {
-	postAPI := &post.API{PostService: a.PostService, Settings: &a.Settings.Api}
+	postAPI := &post.API{PostService: a.PostService, RecentPostsNum: config.NumberOfRecentPosts()}
 	threadAPI := &thread.API{ThreadService: a.ThreadService}
 	boardAPI := &board.API{BoardService: a.BoardService}
 	userAPI := &user.API{}

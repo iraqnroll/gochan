@@ -8,10 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/schema"
 	"github.com/iraqnroll/gochan/context"
-	"github.com/iraqnroll/gochan/models"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/models"
+	"github.com/iraqnroll/gochan/db/services"
 	"github.com/iraqnroll/gochan/views"
-	"github.com/microcosm-cc/bluemonday"
 )
 
 type Threads struct {
@@ -20,16 +19,14 @@ type Threads struct {
 	FileService   *services.FileService
 	PostsPerPage  int
 	ParentPage    models.ParentPageData
-	PostPolicy    *bluemonday.Policy
 }
 
-func NewThreadsHandler(threadSvc *services.ThreadService, postSvc *services.PostService, fileSvc *services.FileService, parentPage models.ParentPageData, postsPerPage int, pPol *bluemonday.Policy) (t Threads) {
+func NewThreadsHandler(threadSvc *services.ThreadService, postSvc *services.PostService, fileSvc *services.FileService, parentPage models.ParentPageData, postsPerPage int) (t Threads) {
 	t.ThreadService = threadSvc
 	t.PostService = postSvc
 	t.FileService = fileSvc
 	t.ParentPage = parentPage
 	t.PostsPerPage = postsPerPage
-	t.PostPolicy = pPol
 
 	return t
 }
@@ -58,7 +55,10 @@ func (t Threads) Thread(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve board banner : %s", err.Error())
 	}
 
-	t.ParentPage.ChildViewModel = models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:], false, t.PostPolicy)
+	model := models.NewThreadsViewModel(thread.Id, t.PostsPerPage, banner_url, board_uri, thread.Topic, thread.Posts[0], thread.Posts[1:], false)
+	t.renderThreadMarkdown(model)
+
+	t.ParentPage.ChildViewModel = model
 
 	views.Thread(t.ParentPage).Render(r.Context(), w)
 }
@@ -115,10 +115,18 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 	og_media := t.FileService.GetFilenames(files)
 
-	err = t.ThreadService.UpdateAttachedMedia(new_post.Id, attached_media, og_media)
+	err = t.PostService.UpdateAttachedMedia(new_post.Id, attached_media, og_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/%s/%d", board_uri, new_post.ThreadId), http.StatusFound)
+}
+
+func (t Threads) renderThreadMarkdown(m models.ThreadViewModel) {
+	m.OPPost.Content, _ = t.PostService.RenderSafeMarkdown(m.OPPost.Content)
+
+	for i := range m.Replies {
+		m.Replies[i].Content, _ = t.PostService.RenderSafeMarkdown(m.Replies[i].Content)
+	}
 }

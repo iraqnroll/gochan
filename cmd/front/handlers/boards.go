@@ -8,28 +8,27 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/schema"
 	"github.com/iraqnroll/gochan/context"
-	"github.com/iraqnroll/gochan/models"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/models"
+	"github.com/iraqnroll/gochan/db/services"
 	"github.com/iraqnroll/gochan/views"
-	"github.com/microcosm-cc/bluemonday"
 )
 
 type Boards struct {
 	BoardService   *services.BoardService
 	ThreadService  *services.ThreadService
+	PostService    *services.PostService
 	FileService    *services.FileService
 	ThreadsPerPage int
 	ParentPage     models.ParentPageData
-	PostPolicy     *bluemonday.Policy
 }
 
-func NewBoardsHandler(boardSvc *services.BoardService, threadSvc *services.ThreadService, fileSvc *services.FileService, parentPage models.ParentPageData, threadsPerPage int, pPol *bluemonday.Policy) (b Boards) {
+func NewBoardsHandler(boardSvc *services.BoardService, threadSvc *services.ThreadService, postSvc *services.PostService, fileSvc *services.FileService, parentPage models.ParentPageData, threadsPerPage int) (b Boards) {
 	b.BoardService = boardSvc
 	b.ThreadService = threadSvc
+	b.PostService = postSvc
 	b.FileService = fileSvc
 	b.ThreadsPerPage = threadsPerPage
 	b.ParentPage = parentPage
-	b.PostPolicy = pPol
 
 	return b
 }
@@ -61,8 +60,7 @@ func (b Boards) Board(w http.ResponseWriter, r *http.Request) {
 		board.Name,
 		board.Description,
 		banner_uri,
-		board.Threads,
-		b.PostPolicy)
+		board.Threads)
 
 	views.Board(b.ParentPage).Render(r.Context(), w)
 }
@@ -102,7 +100,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Generate fingerprint
-	model.Posts[0].Post_fprint = b.ThreadService.GenerateFingerprint(GetClientIp(r))
+	model.Posts[0].Post_fprint = b.PostService.GenerateFingerprint(GetClientIp(r))
 
 	new_thread, err := b.ThreadService.CreateThread(
 		model.BoardId,
@@ -123,7 +121,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 	}
 	og_media := b.FileService.GetFilenames(files)
 
-	err = b.ThreadService.UpdateAttachedMedia(new_thread.Posts[0].Id, attached_media, og_media)
+	err = b.PostService.UpdateAttachedMedia(new_thread.Posts[0].Id, attached_media, og_media)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

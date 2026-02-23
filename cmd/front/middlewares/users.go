@@ -6,7 +6,7 @@ import (
 
 	"github.com/iraqnroll/gochan/cmd/front/handlers"
 	"github.com/iraqnroll/gochan/context"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/services"
 )
 
 type UsersMiddleware struct {

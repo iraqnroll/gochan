@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/iraqnroll/gochan/models"
-	"github.com/iraqnroll/gochan/services"
+	"github.com/iraqnroll/gochan/db/models"
+	"github.com/iraqnroll/gochan/db/services"
 	"github.com/iraqnroll/gochan/views"
 )
 
