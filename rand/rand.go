@@ -30,8 +30,8 @@ func String(n int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-func GenerateFingerprint(ip, salt string) string {
-	data := ip + salt
+func GenerateSha256Hash(val, salt string) string {
+	data := val + salt
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])[:16]
 }

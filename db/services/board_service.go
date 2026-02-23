@@ -19,7 +19,7 @@ type BoardRepository interface {
 }
 
 type IThreadService interface {
-	CreateThread(board_id int, topic, identifier, content, fingerprint string) (*models.ThreadDto, error)
+	CreateThread(board_id int, topic, identifier, content, fingerprint, tripcode string) (*models.ThreadDto, error)
 	GetThread(thread_id int, for_mod bool) (*models.ThreadDto, error)
 	GetBoardThreads(board_id int, for_mod bool) ([]models.ThreadDto, error)
 }

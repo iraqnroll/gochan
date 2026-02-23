@@ -11,6 +11,7 @@ type PostDto struct {
 	Deleted       bool   `db:"deleted" json:"deleted" schema:"deleted"`
 	OgMedia       string `db:"og_media" schema:"og_media"`
 	HasMedia      string `db:"has_media" schema:"has_media"`
+	Tripcode      string `db:"tripcode"`
 }
 
 type RecentPostsDto struct {

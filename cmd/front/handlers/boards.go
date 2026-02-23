@@ -102,12 +102,16 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 	//Generate fingerprint
 	model.Posts[0].Post_fprint = b.PostService.GenerateFingerprint(GetClientIp(r))
 
+	//Generate tripcode hash if exists
+	model.Posts[0].Identifier, model.Posts[0].Tripcode = b.PostService.GetTripcodeHash(model.Posts[0].Identifier)
+
 	new_thread, err := b.ThreadService.CreateThread(
 		model.BoardId,
 		model.Topic,
 		model.Posts[0].Identifier,
 		model.Posts[0].Content,
-		model.Posts[0].Post_fprint)
+		model.Posts[0].Post_fprint,
+		model.Posts[0].Tripcode)
 	if err != nil {
 		fmt.Printf("Failed to create a new thread : %s", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)

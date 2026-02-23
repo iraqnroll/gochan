@@ -280,6 +280,13 @@ span.identifier {
     font-weight: bold;
 }
 
+span.tripcode {
+    color: #05b96e;
+    font-family:monospace;
+    font-weight: bold;
+    font-size: 12px;
+}
+
 span time {
     direction: ltr;
     white-space: pre;

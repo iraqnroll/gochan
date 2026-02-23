@@ -24,12 +24,12 @@ func (r *PostgresPostRepository) dbInstance() *goqu.Database {
 	return pgDialect.DB(r.db)
 }
 
-func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error) {
+func (r *PostgresPostRepository) CreateNew(thread_id int, identifier, content, fingerprint, tripcode string, is_op bool) (models.PostDto, error) {
 	var result models.PostDto
 
 	_, err := r.dbInstance().Insert("posts").
-		Cols("thread_id", "identifier", "content", "is_op", "fingerprint").
-		Vals([]interface{}{thread_id, identifier, content, is_op, fingerprint}).
+		Cols("thread_id", "identifier", "content", "is_op", "fingerprint", "tripcode").
+		Vals([]interface{}{thread_id, identifier, content, is_op, fingerprint, tripcode}).
 		Returning("id").
 		Executor().
 		ScanStruct(&result)
@@ -56,6 +56,7 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 		goqu.L("COALESCE(to_char(post_timestamp, 'YYYY-MM-DD HH24:MI:SS'), 'Never')").As("post_timestamp"),
 		"is_op",
 		goqu.L("COALESCE(has_media, '')").As("has_media"),
+		goqu.L("COALESCE(tripcode, '')").As("tripcode"),
 	}
 
 	if for_mod {

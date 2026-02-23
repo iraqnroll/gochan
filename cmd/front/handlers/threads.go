@@ -101,7 +101,10 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	//Generate fingerprint
 	model.Post_fprint = t.PostService.GenerateFingerprint(GetClientIp(r))
 
-	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, model.Post_fprint, false)
+	//Split tripcode password from poster name and generate hash if exists.
+	model.Identifier, model.Tripcode = t.PostService.GetTripcodeHash(model.Identifier)
+
+	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, model.Post_fprint, model.Tripcode, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

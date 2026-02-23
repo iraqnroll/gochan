@@ -4,6 +4,7 @@ subtitle = "A modern imageboard engine written in Go!"
 recentpostsnum = 10 #Number of most recent posts (for homepage)
 allowedmediatypes = [".jpg", ".jpeg", ".png", ".webp", ".mp4"]
 fingerprintsalt = "ZX7Q9M2K"
+tripcodesalt = "ZX7Q9M2K"
 
 #Optional server-side rendered frontend for gochan
 [frontend]

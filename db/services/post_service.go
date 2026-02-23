@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/iraqnroll/gochan/db/models"
 	mdextensions "github.com/iraqnroll/gochan/md_extensions"
@@ -17,7 +18,7 @@ import (
 
 type PostRepository interface {
 	GetAllByThread(thread_id int, for_mod bool) ([]models.PostDto, error)
-	CreateNew(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error)
+	CreateNew(thread_id int, identifier, content, fingerprint, tripcode string, is_op bool) (models.PostDto, error)
 	GetMostRecent(num_of_posts int) ([]models.RecentPostsDto, error)
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 	SoftDeletePost(post_id int) error
@@ -26,9 +27,10 @@ type PostRepository interface {
 
 type PostService struct {
 	PostRepo        PostRepository
-	FingerprintSalt string
 	PostPolicy      *bluemonday.Policy
 	MdParser        goldmark.Markdown
+	FingerprintSalt string
+	TripcodeSalt    string
 }
 
 func initPostPolicies() *bluemonday.Policy {
@@ -69,18 +71,19 @@ func initGoldmarkParser() goldmark.Markdown {
 	)
 }
 
-func NewPostService(repo PostRepository, fprintSalt string) *PostService {
+func NewPostService(repo PostRepository, fprintSalt, tripcodeSalt string) *PostService {
 	return &PostService{
 		PostRepo:        repo,
 		FingerprintSalt: fprintSalt,
+		TripcodeSalt:    tripcodeSalt,
 		PostPolicy:      initPostPolicies(),
 		MdParser:        initGoldmarkParser(),
 	}
 }
 
 // Creates a post in a specific thread
-func (ps *PostService) CreatePost(thread_id int, identifier, content, fingerprint string, is_op bool) (models.PostDto, error) {
-	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, fingerprint, is_op)
+func (ps *PostService) CreatePost(thread_id int, identifier, content, fingerprint, tripcode string, is_op bool) (models.PostDto, error) {
+	post, err := ps.PostRepo.CreateNew(thread_id, identifier, content, fingerprint, tripcode, is_op)
 	if err != nil {
 		return post, fmt.Errorf("PostService.CreateReply failed : %w", err)
 	}
@@ -116,14 +119,12 @@ func (ps *PostService) RemoveSoftDeleteFromPost(post_id int) error {
 	return ps.PostRepo.RemoveSoftDeleteFromPost(post_id)
 }
 
-// TODO: Maybe split this into a separate service ? right now thread service wraps this
 func (ps *PostService) UpdateAttachedMedia(post_id int, attached_media, original_media string) error {
 	return ps.PostRepo.UpdateAttachedMedia(post_id, attached_media, original_media)
 }
 
-// TODO: Thread service wraps this too.... either my board handler is structured wrong or i need a separate service...
 func (ps *PostService) GenerateFingerprint(ip string) string {
-	return rand.GenerateFingerprint(ip, ps.FingerprintSalt)
+	return rand.GenerateSha256Hash(ip, ps.FingerprintSalt)
 }
 
 func (ps *PostService) RenderSafeMarkdown(md string) (string, error) {
@@ -134,4 +135,15 @@ func (ps *PostService) RenderSafeMarkdown(md string) (string, error) {
 	safe := ps.PostPolicy.SanitizeBytes(buf.Bytes())
 
 	return string(safe), nil
+}
+
+// TODO: make the tripcode prefix configurable
+// TODO: add validation to tripcodes (min. length, allowed chars..)
+func (ps *PostService) GetTripcodeHash(name string) (string, string) {
+	ident, tripcode_pw, found := strings.Cut(name, "#")
+	if found && len(tripcode_pw) > 0 {
+		return ident, rand.GenerateSha256Hash(tripcode_pw, ps.TripcodeSalt)
+	}
+
+	return name, ""
 }

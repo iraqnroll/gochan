@@ -22,6 +22,7 @@ var Config struct {
 		RecentPostsNum    int
 		AllowedMediaTypes []string
 		FingerprintSalt   string
+		TripcodeSalt      string
 	}
 	Database struct {
 		Host     string
@@ -88,6 +89,10 @@ func FrontendStaticDir() string {
 
 func FingerprintSalt() string {
 	return Config.Global.FingerprintSalt
+}
+
+func TripcodeSalt() string {
+	return Config.Global.TripcodeSalt
 }
 
 func AllowedMediaTypes() []string {

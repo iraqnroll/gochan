@@ -8,5 +8,6 @@ CREATE TABLE posts (
     has_media TEXT,
     og_media TEXT,
     fingerprint TEXT,
-    deleted BOOLEAN DEFAULT(FALSE)
+    deleted BOOLEAN DEFAULT(FALSE),
+    tripcode VARCHAR(64)
 )
