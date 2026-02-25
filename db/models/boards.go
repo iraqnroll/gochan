@@ -39,7 +39,7 @@ func NewBoardViewModel(id, threads_per_page int, uri, name, desc, banner_url str
 	m.BannerUrl = banner_url
 
 	for _, thread := range threads {
-		result := NewThreadsViewModel(thread.Id, 10, banner_url, uri, thread.Topic, thread.Posts[0], thread.Posts[1:], true)
+		result := NewThreadsViewModel(thread.Id, 10, banner_url, uri, thread.Topic, thread.Posts[0], thread.Posts[1:], true, thread.Pinned)
 		m.Threads = append(m.Threads, result)
 	}
 

@@ -117,13 +117,16 @@ templ NewThreadOrReplyComponent(data any) {
     </form>
 }
 
-templ PostComponent(post models.PostDto, board_uri, thread_url, post_class string, boardView bool) {
+templ PostComponent(post models.PostDto, board_uri, thread_url, post_class string, boardView, pinned bool) {
     {{ postId := fmt.Sprintf("%d", post.Id)}}
     {{ show_modbar := context.User(ctx) != nil }}
     if post_class == "post op" {
         <div class={ post_class } id={ postId }>
+            if post.Pinned {
+                <i class="fa-solid fa-thumbtack"></i>
+            } 
             if show_modbar {
-                @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted)
+                @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.ThreadId, post.IsOP, post.Deleted, pinned)
             }
             if post.HasMedia != "" {
                 @PostAttachmentsComponent(board_uri, post.HasMedia, post.ThreadId)
@@ -137,7 +140,7 @@ templ PostComponent(post models.PostDto, board_uri, thread_url, post_class strin
         <div class="reply-container">
             <div class={ post_class } id={ postId }>
                 if show_modbar {
-                    @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.IsOP, post.Deleted)
+                    @PostModerationComponent(post.Post_fprint, thread_url, post.Id, post.ThreadId, post.IsOP, post.Deleted, post.Pinned)
                 }
                 @PostIntroComponent(post, false, board_uri)
                 <div class="content">

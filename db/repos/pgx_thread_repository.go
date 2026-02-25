@@ -31,7 +31,7 @@ func (r *PostgresThreadRepository) GetById(thread_id int) (models.ThreadDto, err
 	var result models.ThreadDto
 
 	found, err := r.dbInstance().From("threads").
-		Select("locked", "board_id", "topic").
+		Select("locked", "board_id", "topic", "sticky").
 		Where(goqu.C("id").Eq(thread_id)).
 		ScanStruct(&result)
 	if err != nil {
@@ -67,9 +67,9 @@ func (r *PostgresThreadRepository) GetAllByBoard(board_id int) ([]models.ThreadD
 	var result []models.ThreadDto
 
 	err := r.dbInstance().From("threads").
-		Select("id", "locked", "topic").
+		Select("id", "locked", "topic", "sticky").
 		Where(goqu.C("board_id").Eq(board_id)).
-		Order(goqu.C("id").Desc()).
+		Order(goqu.I("sticky").Desc(), goqu.I("bumped_at").Desc(), goqu.I("id").Desc()).
 		ScanStructs(&result)
 	if err != nil {
 		return nil, fmt.Errorf("PostgresThreadRepository.GetAllByBoard error: %w", err)
@@ -80,4 +80,32 @@ func (r *PostgresThreadRepository) GetAllByBoard(board_id int) ([]models.ThreadD
 	}
 
 	return result, nil
+}
+
+func (r *PostgresThreadRepository) StickThread(thread_id int) error {
+	_, err := r.dbInstance().Update("threads").
+		Set(goqu.Record{
+			"sticky": true,
+		}).
+		Where(goqu.C("id").Eq(thread_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresThreadRepository.StickThread error: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresThreadRepository) UnstickThread(thread_id int) error {
+	_, err := r.dbInstance().Update("threads").
+		Set(goqu.Record{
+			"sticky": false,
+		}).
+		Where(goqu.C("id").Eq(thread_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresThreadRepository.UnstickThread error: %w", err)
+	}
+	return nil
 }

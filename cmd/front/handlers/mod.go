@@ -303,3 +303,91 @@ func (m Mod) RemoveSoftDeleteFromPost(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, redirect, http.StatusFound)
 }
+
+func (m Mod) PinThread(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	thread_id, err := strconv.Atoi(r.FormValue("thread_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.ThreadService.PinThread(thread_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
+}
+
+func (m Mod) UnpinThread(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	thread_id, err := strconv.Atoi(r.FormValue("thread_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.ThreadService.UnpinThread(thread_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
+}
+
+func (m Mod) PinPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	post_id, err := strconv.Atoi(r.FormValue("post_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.PostService.PinPost(post_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
+}
+
+func (m Mod) UnpinPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	post_id, err := strconv.Atoi(r.FormValue("post_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	redirect := r.FormValue("redirect")
+
+	err = m.PostService.UnpinPost(post_id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, redirect, http.StatusFound)
+}

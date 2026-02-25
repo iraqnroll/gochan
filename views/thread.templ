@@ -29,12 +29,15 @@ templ ThreadSectionComponent(data any) {
         {{ thread_url := fmt.Sprintf("/%s/%d", model.BoardUri, model.Id)}}
         <hr>
         <div class="thread" thread-id={ model.Id } board-uri={ model.BoardUri }>
-            @PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView)
+            if model.Pinned {
+                <i class="fa-solid fa-thumbtack"></i>
+            }
+            @PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView, model.Pinned)
             for _, reply := range model.Replies {
                 if reply.Deleted {
-                    @PostComponent(reply, model.BoardUri, thread_url, "post reply deleted", model.BoardView)
+                    @PostComponent(reply, model.BoardUri, thread_url, "post reply deleted", model.BoardView, false)
                 } else {
-                    @PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView)
+                    @PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView, false)
                 }
             }
         </div>

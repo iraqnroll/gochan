@@ -10,6 +10,8 @@ type ThreadRepository interface {
 	CreateNew(board_id int, topic string) (models.ThreadDto, error)
 	GetById(thread_id int) (models.ThreadDto, error)
 	GetAllByBoard(board_id int) ([]models.ThreadDto, error)
+	StickThread(thread_id int) error
+	UnstickThread(thread_id int) error
 }
 
 type IPostService interface {
@@ -94,4 +96,12 @@ func (ts *ThreadService) SortPostsIntoThreads(threads []models.ThreadDto, posts 
 		threadId := threads[i].Id
 		threads[i].Posts = postHashMap[threadId]
 	}
+}
+
+func (ts *ThreadService) PinThread(thread_id int) error {
+	return ts.threadRepo.StickThread(thread_id)
+}
+
+func (ts *ThreadService) UnpinThread(thread_id int) error {
+	return ts.threadRepo.UnstickThread(thread_id)
 }

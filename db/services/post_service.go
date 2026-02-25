@@ -24,6 +24,8 @@ type PostRepository interface {
 	UpdateAttachedMedia(post_id int, attached_media, original_media string) error
 	SoftDeletePost(post_id int) error
 	RemoveSoftDeleteFromPost(post_id int) error
+	StickPost(post_id int) error
+	UnstickPost(post_id int) error
 }
 
 type PostService struct {
@@ -153,4 +155,12 @@ func (ps *PostService) GetTripcodeHash(name string, authenticated bool) (string,
 		}
 	}
 	return ident, tripcode
+}
+
+func (ps *PostService) PinPost(post_id int) error {
+	return ps.PostRepo.StickPost(post_id)
+}
+
+func (ps *PostService) UnpinPost(post_id int) error {
+	return ps.PostRepo.UnstickPost(post_id)
 }

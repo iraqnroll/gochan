@@ -9,5 +9,6 @@ CREATE TABLE posts (
     og_media TEXT,
     fingerprint TEXT,
     deleted BOOLEAN DEFAULT(FALSE),
-    tripcode VARCHAR(64)
+    tripcode VARCHAR(64),
+    sticky BOOLEAN DEFAULT(FALSE)
 )

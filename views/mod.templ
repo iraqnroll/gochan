@@ -368,34 +368,105 @@ templ ModMenuComponent() {
     </div>
 }
 
-templ PostModerationComponent(fingerprint, curr_url string, post_id int, is_op, deleted bool) {
+templ PostModerationComponent(fingerprint, curr_url string, post_id, thread_id int, is_op, deleted, pinned bool) {
     <div class="mod_toolbarwrap">
         <div class="mod_fingerprint">
             <i class="fa-solid fa-fingerprint"></i>
             <a>{ fingerprint }</a>
         </div>
         <div class="mod_actions">
-            if !is_op && !deleted{
-                <div class="mod_hidepost">
-                    <form action="/mod/actions/deletepost" method="post">
-                        <input type="hidden" name="post_id" value={ post_id }>
-                        <input type="hidden" name="redirect" value= { curr_url }>
-                        <button type="submit" style="background: none; border: none; cursor: pointer;" title="Hide post">
-                            <i class="fa-solid fa-eye-slash"></i>
-                        </button>
-                    </form>
-                </div>
+            if !is_op && !deleted {
+                @PostModerationHidePostComponent(curr_url, post_id)
             } else if !is_op && deleted {
-                <div class="mod_hidepost">
-                    <form action="/mod/actions/undeletepost" method="post">
-                        <input type="hidden" name="post_id" value={ post_id }>
-                        <input type="hidden" name="redirect" value= { curr_url }>
-                        <button type="submit" style="background: none; border: none; cursor: pointer;" title="Un-Hide post">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </form>
-                </div>
+                @PostModerationUnhidePostComponent(curr_url, post_id)
             }
+            
+            if !is_op && !pinned {
+                @PostModerationPinPostComponent(curr_url, post_id)
+            } else if !is_op && pinned {
+                @PostModerationUnpinPostComponent(curr_url, post_id)
+            }
+
+            if is_op && !pinned {
+                @PostModerationPinThreadComponent(curr_url, thread_id)
+            } else if is_op && pinned {
+                @PostModerationUnpinThreadComponent(curr_url, thread_id)
+            }
+
         </div>
+    </div>
+}
+
+templ PostModerationHidePostComponent(curr_url string, post_id int) {
+    <div class="mod_hidepost">
+        <form action="/mod/actions/deletepost" method="post">
+            <input type="hidden" name="post_id" value={ post_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Hide post">
+                <i class="fa-solid fa-eye-slash"></i>
+            </button>
+        </form>
+    </div>
+}
+
+templ PostModerationUnhidePostComponent(curr_url string, post_id int) {
+    <div class="mod_unhidepost">
+        <form action="/mod/actions/undeletepost" method="post">
+            <input type="hidden" name="post_id" value={ post_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Un-Hide post">
+                <i class="fa-solid fa-eye"></i>
+            </button>
+        </form>
+    </div>
+}
+
+templ PostModerationPinPostComponent(curr_url string, post_id int) {
+    <div class="mod_pinpost">
+        <form action="/mod/actions/pinpost" method="post">
+            <input type="hidden" name="post_id" value={ post_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Pin post">
+                <i class="fa-solid fa-thumbtack"></i>
+            </button>
+        </form>
+    </div>
+}
+
+templ PostModerationUnpinPostComponent(curr_url string, post_id int) {
+    <div class="mod_unpinpost">
+        <form action="/mod/actions/unpinpost" method="post">
+            <input type="hidden" name="post_id" value={ post_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Unpin post">
+                <i class="fa-solid fa-thumbtack-slash"></i>
+            </button>
+        </form>
+    </div>
+}
+
+templ PostModerationPinThreadComponent(curr_url string, thread_id int) {
+    <div class="mod_pinthread">
+        <form action="/mod/actions/pinthread" method="post">
+            <input type="hidden" name="thread_id" value={ thread_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Pin thread">
+                <i class="fa-solid fa-thumbtack"></i>
+                <i class="fa-solid fa-bookmark"></i>
+            </button>
+        </form>
+    </div>
+}
+
+templ PostModerationUnpinThreadComponent(curr_url string, thread_id int) {
+    <div class="mod_unpinthread">
+        <form action="/mod/actions/unpinthread" method="post">
+            <input type="hidden" name="thread_id" value={ thread_id }>
+            <input type="hidden" name="redirect" value= { curr_url }>
+            <button type="submit" style="background: none; border: none; cursor: pointer;" title="Unpin thread">
+                <i class="fa-solid fa-thumbtack-slash"></i>
+                <i class="fa-solid fa-bookmark"></i>
+            </button>
+        </form>
     </div>
 }

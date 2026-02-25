@@ -57,6 +57,7 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 		"is_op",
 		goqu.L("COALESCE(has_media, '')").As("has_media"),
 		goqu.L("COALESCE(tripcode, '')").As("tripcode"),
+		"sticky",
 	}
 
 	if for_mod {
@@ -75,7 +76,7 @@ func (r *PostgresPostRepository) GetAllByThread(thread_id int, for_mod bool) ([]
 	err := r.dbInstance().From("posts").
 		Select(cols...).
 		Where(whereExpr).
-		Order(goqu.C("id").Asc()).
+		Order(goqu.I("is_op").Desc(), goqu.I("sticky").Desc(), goqu.I("id").Asc()).
 		ScanStructs(&result)
 	if err != nil {
 		return nil, fmt.Errorf("PostgresPostRepository.GetAllByThread error: %w", err)
@@ -150,6 +151,34 @@ func (r *PostgresPostRepository) RemoveSoftDeleteFromPost(post_id int) error {
 
 	if err != nil {
 		return fmt.Errorf("PostgresPostRepository.RemoveSoftDeleteFromPost error: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresPostRepository) StickPost(post_id int) error {
+	_, err := r.dbInstance().Update("posts").
+		Set(goqu.Record{
+			"sticky": true,
+		}).
+		Where(goqu.C("id").Eq(post_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresPostRepository.StickPost error: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresPostRepository) UnstickPost(post_id int) error {
+	_, err := r.dbInstance().Update("posts").
+		Set(goqu.Record{
+			"sticky": false,
+		}).
+		Where(goqu.C("id").Eq(post_id)).
+		Executor().Exec()
+
+	if err != nil {
+		return fmt.Errorf("PostgresPostRepository.UnstickPost error: %w", err)
 	}
 	return nil
 }

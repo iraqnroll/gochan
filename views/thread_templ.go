@@ -184,24 +184,30 @@ func ThreadSectionComponent(data any) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+			if model.Pinned {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<i class=\"fa-solid fa-thumbtack\"></i>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = PostComponent(model.OPPost, model.BoardUri, thread_url, "post op", model.BoardView, model.Pinned).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, reply := range model.Replies {
 				if reply.Deleted {
-					templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, thread_url, "post reply deleted", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, thread_url, "post reply deleted", model.BoardView, false).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView).Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = PostComponent(reply, model.BoardUri, thread_url, "post reply", model.BoardView, false).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><hr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><hr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
