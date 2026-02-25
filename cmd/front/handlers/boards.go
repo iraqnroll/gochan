@@ -103,7 +103,7 @@ func (b Boards) NewThread(w http.ResponseWriter, r *http.Request) {
 	model.Posts[0].Post_fprint = b.PostService.GenerateFingerprint(GetClientIp(r))
 
 	//Generate tripcode hash if exists
-	model.Posts[0].Identifier, model.Posts[0].Tripcode = b.PostService.GetTripcodeHash(model.Posts[0].Identifier)
+	model.Posts[0].Identifier, model.Posts[0].Tripcode = b.PostService.GetTripcodeHash(model.Posts[0].Identifier, context.User(r.Context()) != nil)
 
 	new_thread, err := b.ThreadService.CreateThread(
 		model.BoardId,

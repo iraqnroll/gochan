@@ -102,7 +102,7 @@ func (t Threads) Reply(w http.ResponseWriter, r *http.Request) {
 	model.Post_fprint = t.PostService.GenerateFingerprint(GetClientIp(r))
 
 	//Split tripcode password from poster name and generate hash if exists.
-	model.Identifier, model.Tripcode = t.PostService.GetTripcodeHash(model.Identifier)
+	model.Identifier, model.Tripcode = t.PostService.GetTripcodeHash(model.Identifier, context.User(r.Context()) != nil)
 
 	new_post, err := t.PostService.CreatePost(model.ThreadId, model.Identifier, model.Content, model.Post_fprint, model.Tripcode, false)
 	if err != nil {

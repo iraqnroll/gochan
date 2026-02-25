@@ -17,12 +17,13 @@ const (
 
 var Config struct {
 	Global struct {
-		Shortname         string
-		Subtitle          string
-		RecentPostsNum    int
-		AllowedMediaTypes []string
-		FingerprintSalt   string
-		TripcodeSalt      string
+		Shortname              string
+		Subtitle               string
+		RecentPostsNum         int
+		AllowedMediaTypes      []string
+		FingerprintSalt        string
+		TripcodeSalt           string
+		AuthenticatedTripcodes map[string]string
 	}
 	Database struct {
 		Host     string
@@ -113,4 +114,8 @@ func Subtitle() string {
 
 func NumberOfRecentPosts() int {
 	return Config.Api.RecentPostsNum
+}
+
+func AuthenticatedTripcode(password string) string {
+	return Config.Global.AuthenticatedTripcodes[password]
 }

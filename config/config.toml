@@ -6,6 +6,10 @@ allowedmediatypes = [".jpg", ".jpeg", ".png", ".webp", ".mp4"]
 fingerprintsalt = "ZX7Q9M2K"
 tripcodesalt = "ZX7Q9M2K"
 
+[global.authenticatedtripcodes]
+"admin" = "TEST ADMIN TRIPCODE!"
+"test" = "TEST AUTHENTICATED TRIPCODE!"
+
 #Optional server-side rendered frontend for gochan
 [frontend]
 enabled = true

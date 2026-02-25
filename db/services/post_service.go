@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iraqnroll/gochan/config"
 	"github.com/iraqnroll/gochan/db/models"
 	mdextensions "github.com/iraqnroll/gochan/md_extensions"
 	"github.com/iraqnroll/gochan/rand"
@@ -139,11 +140,17 @@ func (ps *PostService) RenderSafeMarkdown(md string) (string, error) {
 
 // TODO: make the tripcode prefix configurable
 // TODO: add validation to tripcodes (min. length, allowed chars..)
-func (ps *PostService) GetTripcodeHash(name string) (string, string) {
-	ident, tripcode_pw, found := strings.Cut(name, "#")
-	if found && len(tripcode_pw) > 0 {
-		return ident, rand.GenerateSha256Hash(tripcode_pw, ps.TripcodeSalt)
+func (ps *PostService) GetTripcodeHash(name string, authenticated bool) (string, string) {
+	ident, pw, found := strings.Cut(name, "#")
+	if !found || pw == "" {
+		return ident, ""
 	}
+	tripcode := rand.GenerateSha256Hash(pw, ps.TripcodeSalt)
 
-	return name, ""
+	if authenticated {
+		if auth := config.AuthenticatedTripcode(pw); auth != "" {
+			tripcode = auth
+		}
+	}
+	return ident, tripcode
 }
